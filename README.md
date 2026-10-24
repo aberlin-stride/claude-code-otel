@@ -1,4 +1,49 @@
-# Claude Code Observability Stack
+# Claude Code Observability
+
+A forked and improved version of https://github.com/ColeMurray/claude-code-otel
+
+
+## 🚀 Quick Start
+
+### 1. Start the Stack
+```bash
+# Start all services
+make up
+
+# Check status
+make status
+```
+
+### 2. Configure Claude Code
+```bash
+# Enable telemetry
+export CLAUDE_CODE_ENABLE_TELEMETRY=1
+
+# Configure exporters
+export OTEL_METRICS_EXPORTER=otlp
+export OTEL_LOGS_EXPORTER=otlp
+export OTEL_TRACES_EXPORTER=otlp
+export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
+
+# For debugging (faster export intervals)
+export OTEL_METRIC_EXPORT_INTERVAL=10000
+export OTEL_LOGS_EXPORT_INTERVAL=5000
+
+# Privacy controls
+OTEL_LOG_USER_PROMPTS=1                   # Enable prompt content logging
+
+# Tool/skill cost attribution (v2.1.273+)
+OTEL_LOG_TOOL_DETAILS=1                   # Required for Cost by Skill panels to show real skill names
+
+# Run Claude Code
+claude
+```
+
+
+
+
+## Claude Code Observability Stack
 
 [![GitHub](https://img.shields.io/badge/GitHub-ColeMurray%2Fclaude--code--otel-blue?logo=github)](https://github.com/ColeMurray/claude-code-otel)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -62,36 +107,6 @@ Claude Code → OpenTelemetry Collector → Prometheus (metrics) + Loki (events/
 | **Tempo** | Trace storage & querying | internal only | - |
 | **Grafana** | Dashboards & visualization | 127.0.0.1:3000 | http://localhost:3000 |
 
-## 🚀 Quick Start
-
-### 1. Start the Stack
-```bash
-# Start all services
-make up
-
-# Check status
-make status
-```
-
-### 2. Configure Claude Code
-```bash
-# Enable telemetry
-export CLAUDE_CODE_ENABLE_TELEMETRY=1
-
-# Configure exporters
-export OTEL_METRICS_EXPORTER=otlp
-export OTEL_LOGS_EXPORTER=otlp
-export OTEL_TRACES_EXPORTER=otlp
-export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
-export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
-
-# For debugging (faster export intervals)
-export OTEL_METRIC_EXPORT_INTERVAL=10000
-export OTEL_LOGS_EXPORT_INTERVAL=5000
-
-# Run Claude Code
-claude
-```
 
 ### 3. Access Dashboards
 - **Grafana**: http://localhost:3000 (admin/admin)
