@@ -338,7 +338,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Claude Code redacts the actual skill/plugin name: skill_name is only ever the literal string \"third-party\" when a third-party skill or plugin was involved in the call, or absent (shown as \"direct\") otherwise. This chart can only show that split, never which skill ran.",
+      "description": "Cost by skill for this session. With OTEL_LOG_TOOL_DETAILS=1 (v2.1.273+), skill_name carries the real skill name. Without it, third-party marketplace skills are redacted to the literal string \"third-party\" (built-in/bundled/user-defined/official-marketplace skills always show real names). Absent skill_name shows as \"direct\" (no skill active).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -381,7 +381,7 @@
           "instant": true
         }
       ],
-      "title": "Cost: Direct vs Third-Party Skill (Selected Session)",
+      "title": "Cost by Skill (Selected Session)",
       "type": "bargauge"
     },
     {
