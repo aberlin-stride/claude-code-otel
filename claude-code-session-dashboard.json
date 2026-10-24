@@ -110,7 +110,7 @@
       "options": {
         "legend": {
           "calcs": [
-            "sum"
+            "lastNotNull"
           ],
           "displayMode": "table",
           "placement": "bottom"
@@ -244,7 +244,7 @@
         "reduceOptions": {
           "values": false,
           "calcs": [
-            "sum"
+            "lastNotNull"
           ],
           "fields": ""
         },
@@ -307,7 +307,7 @@
         "reduceOptions": {
           "values": false,
           "calcs": [
-            "sum"
+            "lastNotNull"
           ],
           "fields": ""
         },
@@ -330,6 +330,55 @@
       ],
       "title": "Cost by Source: Main vs Subagent (Selected Session)",
       "type": "piechart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 101,
+      "panels": [],
+      "title": "\ud83d\udcdc Session Timeline",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "What happened in this session: prompts, assistant replies, tool calls, decisions, API calls, in order, with full prompt/response text.",
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "id": 102,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": false,
+        "sortOrder": "Ascending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "{service_name=~\".*claude-code.*\"} | session_id=\"$session_id\" | line_format \"{{.event_timestamp}} [{{.event_name}}]{{if .tool_name}} tool={{.tool_name}}{{end}}{{if .model}} model={{.model}}{{end}}{{if .prompt_length}} prompt_len={{.prompt_length}}{{end}}{{if .prompt}} prompt={{.prompt}}{{end}}{{if .response_length}} resp_len={{.response_length}}{{end}}{{if .response}} response={{.response}}{{end}}{{if .duration_ms}} dur={{.duration_ms}}ms{{end}}{{if .decision_type}} decision={{.decision_type}}{{end}}{{if .success}} success={{.success}}{{end}}\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Session Event Timeline",
+      "type": "logs"
     }
   ],
   "refresh": "30s",
@@ -347,20 +396,20 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(claude_code_cost_usage_USD_total{job=\"otel-collector\"}, session_id)",
+        "definition": "query_result(sort(min by (session_id) (min_over_time(timestamp(claude_code_session_count_total{job=\"otel-collector\"})[$__range:1m]))))",
         "hide": 0,
         "includeAll": false,
         "multi": false,
         "name": "session_id",
         "options": [],
         "query": {
-          "query": "label_values(claude_code_cost_usage_USD_total{job=\"otel-collector\"}, session_id)",
+          "query": "query_result(sort(min by (session_id) (min_over_time(timestamp(claude_code_session_count_total{job=\"otel-collector\"})[$__range:1m]))))",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,
-        "regex": "",
+        "regex": "/session_id=\"(?<value>[^\"]+)\"/",
         "skipUrlSync": false,
-        "sort": 1,
+        "sort": 0,
         "type": "query"
       }
     ]
