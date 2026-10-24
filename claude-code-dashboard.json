@@ -27,7 +27,7 @@
       "keepTime": true,
       "tags": [],
       "targetBlank": false,
-      "title": "Session Drilldown \u2192",
+      "title": "Session Drilldown →",
       "tooltip": "",
       "type": "link",
       "url": "/d/claude-code-session-drilldown"
@@ -36,7 +36,7 @@
   "liveNow": false,
   "panels": [
     {
-      "title": "\ud83d\udcca Overview",
+      "title": "📊 Overview",
       "type": "row",
       "gridPos": {
         "h": 1,
@@ -323,7 +323,7 @@
       "type": "stat"
     },
     {
-      "title": "\ud83d\udcb0 Cost & Usage Analysis",
+      "title": "💰 Cost & Usage Analysis",
       "type": "row",
       "gridPos": {
         "h": 1,
@@ -695,7 +695,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 82
       },
       "id": 15,
       "options": {
@@ -729,13 +729,13 @@
       "type": "timeseries"
     },
     {
-      "title": "\ud83d\udd27 Tool Usage & Performance",
+      "title": "🔧 Tool Usage & Performance",
       "type": "row",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 46
+        "y": 38
       },
       "collapsed": false
     },
@@ -869,7 +869,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 47
+        "y": 39
       },
       "id": 7,
       "options": {
@@ -996,7 +996,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 47
+        "y": 39
       },
       "id": 14,
       "options": {
@@ -1093,7 +1093,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 55
+        "y": 47
       },
       "id": 8,
       "options": {
@@ -1125,13 +1125,13 @@
       "type": "timeseries"
     },
     {
-      "title": "\u26a1 Performance & Errors",
+      "title": "⚡ Performance & Errors",
       "type": "row",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 63
+        "y": 55
       },
       "collapsed": false
     },
@@ -1195,7 +1195,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 64
+        "y": 56
       },
       "id": 9,
       "options": {
@@ -1287,7 +1287,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 64
+        "y": 56
       },
       "id": 10,
       "options": {
@@ -1319,13 +1319,13 @@
       "type": "timeseries"
     },
     {
-      "title": "\ud83d\udcdd User Activity & Productivity",
+      "title": "📝 User Activity & Productivity",
       "type": "row",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 72
+        "y": 64
       },
       "collapsed": false
     },
@@ -1389,7 +1389,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 73
+        "y": 65
       },
       "id": 11,
       "options": {
@@ -1480,7 +1480,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 73
+        "y": 65
       },
       "description": "Trailing 1h commit/PR count, sampled at the graph's native resolution. A session's first commit/PR inside a sampled window can be undercounted (Prometheus increase() limitation).",
       "id": 12,
@@ -1523,13 +1523,13 @@
       "type": "timeseries"
     },
     {
-      "title": "\ud83d\udd0d Event Logs",
+      "title": "🔍 Event Logs",
       "type": "row",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 81
+        "y": 73
       },
       "collapsed": false
     },
@@ -1542,7 +1542,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 82
+        "y": 74
       },
       "id": 13,
       "options": {
@@ -1561,7 +1561,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" | line_format \"{{.event_timestamp}} [{{.name}}] {{if eq .success \\\"true\\\"}}\u2705{{else}}\u274c{{end}} {{.duration_ms}}ms {{if .error}}ERROR: {{.error}}{{end}}\"",
+          "expr": "{service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" | line_format \"{{.event_timestamp}} [{{.name}}] {{if eq .success \\\"true\\\"}}✅{{else}}❌{{end}} {{.duration_ms}}ms {{if .error}}ERROR: {{.error}}{{end}}\"",
           "refId": "A"
         }
       ],
@@ -1577,7 +1577,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 82
+        "y": 74
       },
       "id": 17,
       "options": {
@@ -1596,111 +1596,12 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{service_name=~\".*claude-code.*\"} |= \"claude_code.api_error\" | line_format \"{{.event_timestamp}} [{{.model}}] \u274c HTTP {{.status_code}} {{.duration_ms}}ms ERROR: {{.error}}\"",
+          "expr": "{service_name=~\".*claude-code.*\"} |= \"claude_code.api_error\" | line_format \"{{.event_timestamp}} [{{.model}}] ❌ HTTP {{.status_code}} {{.duration_ms}}ms ERROR: {{.error}}\"",
           "refId": "A"
         }
       ],
       "title": "API Error Events",
       "type": "logs"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "description": "No metric ties $ cost to a specific tool (cost series has no tool_name label). This overlays cost rate and tool-call rate so spikes can be correlated by eye; it is NOT a per-tool dollar breakdown.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisPlacement": "auto",
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "lineWidth": 2,
-            "pointSize": 5,
-            "showPoints": "never"
-          },
-          "unit": "short"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Cost (5m)"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "currencyUSD"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "left"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": ".*Tool Calls.*"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "unit",
-                "value": "short"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 22
-      },
-      "id": 18,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "sum(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[5m]))",
-          "interval": "",
-          "legendFormat": "Cost (5m)",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "expr": "sum by (name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" [5m]))",
-          "legendFormat": "Tool Calls: {{name}}",
-          "refId": "B"
-        }
-      ],
-      "title": "\ud83d\udcb5 Cost Rate vs Tool-Call Rate (Correlation, Not a $/Tool Split)",
-      "type": "timeseries"
     },
     {
       "datasource": {
@@ -1747,9 +1648,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 22
+        "w": 24,
+        "x": 0,
+        "y": 14
       },
       "id": 19,
       "options": {
@@ -1789,7 +1690,7 @@
           "refId": "B"
         }
       ],
-      "title": "\ud83d\udea8 Cost Rate vs Budget Threshold",
+      "title": "🚨 Cost Rate vs Budget Threshold",
       "type": "timeseries"
     },
     {
@@ -1812,7 +1713,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 22
       },
       "id": 23,
       "options": {
@@ -1848,7 +1749,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Cost by MCP tool, across all sessions in range. Only covers tool calls routed through MCP servers (mcp_tool.name / mcp_server.name labels on the cost metric) — built-in tools (Read, Edit, Bash, etc.) carry no tool_name on this metric and cannot be split out; see 'Cost Rate vs Tool-Call Rate' panel for those. User-configured MCP servers show as \"custom\" unless OTEL_LOG_TOOL_DETAILS=1 (v2.1.273+). Uses increase() over the full selected range, so a session's very first cost sample can be undercounted.",
+      "description": "Cost by MCP server + tool, across all sessions in range. Legend is \"server: tool\" (mcp_server.name / mcp_tool.name labels on the cost metric). Filtered to series where mcp_tool_name is set, so only covers tool calls routed through MCP servers — built-in tools (Read, Edit, Bash, etc.) carry no tool_name on this metric and cannot be split out. User-configured MCP servers show as \"custom\" unless OTEL_LOG_TOOL_DETAILS=1 (v2.1.273+). Uses increase() over the full selected range, so a session's very first cost sample can be undercounted.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1863,7 +1764,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 30
       },
       "id": 24,
       "options": {
@@ -1884,9 +1785,9 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (mcp_tool_name) (label_replace(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[$__range]), \"mcp_tool_name\", \"none\", \"mcp_tool_name\", \"^$\"))",
+          "expr": "sum by (mcp_server_name, mcp_tool_name) (increase(claude_code_cost_usage_USD_total{job=\"otel-collector\", mcp_tool_name!=\"\"}[$__range]))",
           "interval": "",
-          "legendFormat": "{{mcp_tool_name}}",
+          "legendFormat": "{{mcp_server_name}}: {{mcp_tool_name}}",
           "refId": "A",
           "instant": true
         }

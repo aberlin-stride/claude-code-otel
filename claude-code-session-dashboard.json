@@ -389,7 +389,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Cost by MCP tool for this session. Only covers tool calls routed through MCP servers (mcp_tool.name / mcp_server.name labels on the cost metric) — built-in tools (Read, Edit, Bash, etc.) carry no tool_name on this metric and cannot be split out. User-configured MCP servers show as \"custom\" unless OTEL_LOG_TOOL_DETAILS=1 (v2.1.273+).",
+      "description": "Cost by MCP server + tool for this session. Legend is \"server: tool\" (mcp_server.name / mcp_tool.name labels on the cost metric). Filtered to series where mcp_tool_name is set, so only covers tool calls routed through MCP servers — built-in tools (Read, Edit, Bash, etc.) carry no tool_name on this metric and cannot be split out. User-configured MCP servers show as \"custom\" unless OTEL_LOG_TOOL_DETAILS=1 (v2.1.273+).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -425,9 +425,9 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (mcp_tool_name) (label_replace(max_over_time(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]), \"mcp_tool_name\", \"none\", \"mcp_tool_name\", \"^$\"))",
+          "expr": "sum by (mcp_server_name, mcp_tool_name) (max_over_time(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\", mcp_tool_name!=\"\"}[$__range]))",
           "interval": "",
-          "legendFormat": "{{mcp_tool_name}}",
+          "legendFormat": "{{mcp_server_name}}: {{mcp_tool_name}}",
           "refId": "A",
           "instant": true
         }
