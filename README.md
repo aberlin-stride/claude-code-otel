@@ -47,7 +47,7 @@ Monitor development productivity with comprehensive session analytics, tool usag
 ## 🏗️ Architecture
 
 ```
-Claude Code → OpenTelemetry Collector → Prometheus (metrics) + Loki (events/logs)
+Claude Code → OpenTelemetry Collector → Prometheus (metrics) + Loki (events/logs) + Tempo (traces)
                                      ↓
                               Grafana (visualization & analysis)
 ```
@@ -56,10 +56,11 @@ Claude Code → OpenTelemetry Collector → Prometheus (metrics) + Loki (events/
 
 | Service | Purpose | Port | UI |
 |---------|---------|------|----| 
-| **OpenTelemetry Collector** | Metrics/logs ingestion | 4317 (gRPC), 4318 (HTTP) | - |
-| **Prometheus** | Metrics storage & querying | 9090 | http://localhost:9090 |
-| **Loki** | Log aggregation & storage | 3100 | - |
-| **Grafana** | Dashboards & visualization | 3000 | http://localhost:3000 |
+| **OpenTelemetry Collector** | Metrics/logs/traces ingestion | 127.0.0.1:4317 (gRPC), 127.0.0.1:4318 (HTTP) | - |
+| **Prometheus** | Metrics storage & querying | 127.0.0.1:9090 | http://localhost:9090 |
+| **Loki** | Log aggregation & storage | internal only | - |
+| **Tempo** | Trace storage & querying | internal only | - |
+| **Grafana** | Dashboards & visualization | 127.0.0.1:3000 | http://localhost:3000 |
 
 ## 🚀 Quick Start
 
@@ -80,6 +81,7 @@ export CLAUDE_CODE_ENABLE_TELEMETRY=1
 # Configure exporters
 export OTEL_METRICS_EXPORTER=otlp
 export OTEL_LOGS_EXPORTER=otlp
+export OTEL_TRACES_EXPORTER=otlp
 export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 
@@ -196,6 +198,7 @@ CLAUDE_CODE_ENABLE_TELEMETRY=1
 # Exporter configuration
 OTEL_METRICS_EXPORTER=otlp,prometheus    # Multiple exporters
 OTEL_LOGS_EXPORTER=otlp
+OTEL_TRACES_EXPORTER=otlp
 
 # Protocol and endpoints
 OTEL_EXPORTER_OTLP_PROTOCOL=grpc

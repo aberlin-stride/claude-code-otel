@@ -42,7 +42,6 @@ logs-grafana: ## Show Grafana logs
 clean: ## Clean up containers and volumes
 	@echo "🧹 Cleaning up..."
 	docker compose down -v
-	docker system prune -f
 	@echo "✅ Cleanup complete!"
 
 
@@ -69,7 +68,8 @@ status: ## Show stack status
 	@echo "🌐 Service URLs:"
 	@echo "  Grafana:      http://localhost:3000"
 	@echo "  Prometheus:   http://localhost:9090"
-	@echo "  Loki:         http://localhost:3100"
+	@echo "  Loki:         internal only (otel-network), query via Grafana"
+	@echo "  Tempo:        internal only (otel-network), query via Grafana"
 
 	@echo "  Collector:    http://localhost:4317 (gRPC), http://localhost:4318 (HTTP)"
 
@@ -82,6 +82,7 @@ setup-claude: ## Display Claude Code telemetry setup instructions
 	@echo "export CLAUDE_CODE_ENABLE_TELEMETRY=1"
 	@echo "export OTEL_METRICS_EXPORTER=otlp"
 	@echo "export OTEL_LOGS_EXPORTER=otlp"
+	@echo "export OTEL_TRACES_EXPORTER=otlp"
 	@echo "export OTEL_EXPORTER_OTLP_PROTOCOL=grpc"
 	@echo "export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317"
 	@echo ""
