@@ -58,7 +58,7 @@ Claude Code → OpenTelemetry Collector → Prometheus (metrics) + Loki (events/
 |---------|---------|------|----| 
 | **OpenTelemetry Collector** | Metrics/logs/traces ingestion | 127.0.0.1:4317 (gRPC), 127.0.0.1:4318 (HTTP) | - |
 | **Prometheus** | Metrics storage & querying | 127.0.0.1:9090 | http://localhost:9090 |
-| **Loki** | Log aggregation & storage | internal only | - |
+| **Loki** | Log aggregation & storage | 127.0.0.1:3100 | - |
 | **Tempo** | Trace storage & querying | internal only | - |
 | **Grafana** | Dashboards & visualization | 127.0.0.1:3000 | http://localhost:3000 |
 
@@ -157,33 +157,47 @@ Access comprehensive analytics through the Grafana dashboard at http://localhost
 - **Session Tracking**: Active sessions and productivity metrics
 - **Error Analysis**: API errors and troubleshooting information
 
-## 📋 Dashboard Sections
+## 📋 Dashboards
 
-The Grafana dashboard is organized into sections reflecting the observability documentation recommendations:
+Two dashboards are provisioned into Grafana:
 
-### 📊 Overview
+### `claude-code-dashboard.json` — Claude Code Observability (range dashboard)
+
+Organized into sections reflecting the observability documentation recommendations:
+
+#### 📊 Overview
 - Active sessions, cost, token usage, lines of code changed
 
-### 💰 Cost & Usage Analysis  
-- Cost trends by model, token usage breakdown
-- **NEW**: API request count tracking by model version
-- Implements cost monitoring recommendations
+#### 💰 Cost & Usage Analysis
+- Cost trends by model, token usage breakdown, API request counts by model version
+- Cost Rate vs Budget Threshold, with a configurable `budget_per_day` ($/day) variable
+- Cost by Skill (requires `OTEL_LOG_TOOL_DETAILS=1`, Claude Code v2.1.273+, to resolve real skill names)
+- Cost by MCP Tool (grouped by `mcp_tool_name`, MCP-routed calls only)
 
-### 🔧 Tool Usage & Performance
+#### 🔧 Tool Usage & Performance
 - Tool frequency and success rates
 - Performance bottleneck identification
 
-### ⚡ Performance & Errors
+#### ⚡ Performance & Errors
 - API latency by model, error rate tracking
 - Performance monitoring as recommended
 
-### 📝 User Activity & Productivity
+#### 📝 User Activity & Productivity
 - Code changes, commits, pull requests
 - Productivity measurement insights
 
-### 🔍 Event Logs
+#### 🔍 Event Logs
 - Real-time tool execution events and API errors
 - Structured log analysis for troubleshooting
+
+### `claude-code-session-dashboard.json` — Session Drilldown
+
+Select a `session_id` to inspect a single Claude Code session:
+
+- Cost by Model & Effort (cumulative), Cache Hit Ratio
+- Active Time: User vs CLI, Cost by Query Source
+- Cost by Skill, Cost by MCP Tool (same attribution caveats as above)
+- Session Event Timeline
 
 ## 🔧 Advanced Configuration
 
@@ -211,6 +225,9 @@ OTEL_LOGS_EXPORT_INTERVAL=5000           # 5 seconds
 
 # Privacy controls
 OTEL_LOG_USER_PROMPTS=1                   # Enable prompt content logging
+
+# Tool/skill cost attribution (v2.1.273+)
+OTEL_LOG_TOOL_DETAILS=1                   # Required for Cost by Skill panels to show real skill names
 
 # Cardinality control
 OTEL_METRICS_INCLUDE_SESSION_ID=true
@@ -246,11 +263,15 @@ make clean                # Clean up containers and volumes
 # Monitoring
 make logs                 # View all logs
 make logs-collector       # View collector logs only
+make logs-prometheus      # View Prometheus logs only
+make logs-grafana         # View Grafana logs only
 make status              # Show service status
+make open                # Open the Grafana dashboard in your browser
 
 # Validation
 make validate-config     # Validate all configs
 make setup-claude       # Show Claude Code setup instructions
+make demo-metrics        # Print pointers for generating demo metrics
 ```
 
 ## 🎯 Use Cases
