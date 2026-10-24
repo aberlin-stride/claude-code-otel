@@ -126,7 +126,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (model, effort) (increase(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
+          "expr": "sum by (model, effort) (increase(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__interval]))",
           "interval": "",
           "legendFormat": "{{model}} ({{effort}})",
           "refId": "A"
@@ -196,7 +196,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(claude_code_token_usage_tokens_total{job=\"otel-collector\", session_id=\"$session_id\", type=\"cacheRead\"}[$__range])) / sum(increase(claude_code_token_usage_tokens_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
+          "expr": "sum(max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\", session_id=\"$session_id\", type=\"cacheRead\"}[$__range])) / sum(max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\", session_id=\"$session_id\", type=~\"input|cacheRead|cacheCreation\"}[$__range]))",
           "interval": "",
           "legendFormat": "Cache Hit Ratio",
           "refId": "A"
@@ -259,7 +259,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (type) (increase(claude_code_active_time_seconds_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
+          "expr": "sum by (type) (max_over_time(claude_code_active_time_seconds_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
           "interval": "",
           "legendFormat": "{{type}}",
           "refId": "A"
@@ -322,7 +322,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (query_source) (increase(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
+          "expr": "sum by (query_source) (max_over_time(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
           "interval": "",
           "legendFormat": "{{query_source}}",
           "refId": "A"
@@ -373,7 +373,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{service_name=~\".*claude-code.*\"} | session_id=\"$session_id\" | line_format \"{{.event_timestamp}} [{{.event_name}}]{{if .tool_name}} tool={{.tool_name}}{{end}}{{if .model}} model={{.model}}{{end}}{{if .prompt_length}} prompt_len={{.prompt_length}}{{end}}{{if .prompt}} prompt={{.prompt}}{{end}}{{if .response_length}} resp_len={{.response_length}}{{end}}{{if .response}} response={{.response}}{{end}}{{if .duration_ms}} dur={{.duration_ms}}ms{{end}}{{if .decision_type}} decision={{.decision_type}}{{end}}{{if .success}} success={{.success}}{{end}}\"",
+          "expr": "{service_name=~\".*claude-code.*\"} | session_id=\"$session_id\" | session_id != \"\" | line_format \"{{.event_timestamp}} [{{.event_name}}]{{if .tool_name}} tool={{.tool_name}}{{end}}{{if .model}} model={{.model}}{{end}}{{if .prompt_length}} prompt_len={{.prompt_length}}{{end}}{{if .prompt}} prompt={{.prompt}}{{end}}{{if .response_length}} resp_len={{.response_length}}{{end}}{{if .response}} response={{.response}}{{end}}{{if .duration_ms}} dur={{.duration_ms}}ms{{end}}{{if .decision_type}} decision={{.decision_type}}{{end}}{{if .success}} success={{.success}}{{end}}\"",
           "refId": "A"
         }
       ],
@@ -396,14 +396,14 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "query_result(sort(min by (session_id) (min_over_time(timestamp(claude_code_session_count_total{job=\"otel-collector\"})[$__range:1m]))))",
+        "definition": "query_result(sort(min by (session_id) (min_over_time(timestamp(claude_code_token_usage_tokens_total{job=\"otel-collector\"})[$__range:1m]))))",
         "hide": 0,
         "includeAll": false,
         "multi": false,
         "name": "session_id",
         "options": [],
         "query": {
-          "query": "query_result(sort(min by (session_id) (min_over_time(timestamp(claude_code_session_count_total{job=\"otel-collector\"})[$__range:1m]))))",
+          "query": "query_result(sort(min by (session_id) (min_over_time(timestamp(claude_code_token_usage_tokens_total{job=\"otel-collector\"})[$__range:1m]))))",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,

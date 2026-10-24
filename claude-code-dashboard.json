@@ -105,7 +105,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(claude_code_session_count_total{job=\"otel-collector\"}[1h]))",
+          "expr": "count(count by (session_id) (count_over_time(claude_code_session_count_total{job=\"otel-collector\"}[1h])))",
           "interval": "",
           "legendFormat": "Sessions (1h)",
           "refId": "A"
@@ -593,8 +593,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "loki",
+        "uid": "loki"
       },
       "fieldConfig": {
         "defaults": {
@@ -711,10 +711,10 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "loki",
+            "uid": "loki"
           },
-          "expr": "sum by (model) (changes(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[5m]))",
+          "expr": "sum by (model) (count_over_time({service_name=~\".*claude-code.*\"} | event_name=\"api_request\" [5m]))",
           "interval": "",
           "legendFormat": "{{model}}",
           "refId": "A"
@@ -907,34 +907,6 @@
           "color": {
             "mode": "palette-classic"
           },
-          "custom": {
-            "axisLabel": "Total Tool Count",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "vis": false
-            },
-            "lineInterpolation": "stepAfter",
-            "lineWidth": 2,
-            "pointSize": 4,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
           "mappings": [],
           "min": 0,
           "thresholds": {
@@ -1023,19 +995,16 @@
       },
       "id": 14,
       "options": {
-        "legend": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
+        "showUnfilled": true
       },
       "targets": [
         {
@@ -1046,11 +1015,12 @@
           "expr": "sum by (tool_name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" [$__range]))",
           "interval": "",
           "legendFormat": "{{tool_name}}",
-          "refId": "A"
+          "refId": "A",
+          "instant": true
         }
       ],
       "title": "Cumulative Tool Usage",
-      "type": "timeseries"
+      "type": "bargauge"
     },
     {
       "datasource": {
@@ -1118,7 +1088,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 31
+        "y": 39
       },
       "id": 8,
       "options": {
@@ -1140,7 +1110,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "100 * (sum by (tool_name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" | success=\"true\" [15m]))) / (sum by (tool_name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" [15m])))",
+          "expr": "100 * ((sum by (tool_name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" | success=\"true\" [15m]))) or (0 * sum by (tool_name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" [15m])))) / (sum by (tool_name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" [15m])))",
           "interval": "",
           "legendFormat": "{{tool_name}}",
           "refId": "A"
@@ -1318,7 +1288,7 @@
       "options": {
         "legend": {
           "calcs": [
-            "sum"
+            "lastNotNull"
           ],
           "displayMode": "table",
           "placement": "bottom"
@@ -1420,7 +1390,7 @@
       "options": {
         "legend": {
           "calcs": [
-            "sum"
+            "lastNotNull"
           ],
           "displayMode": "table",
           "placement": "bottom"
@@ -1511,7 +1481,7 @@
       "options": {
         "legend": {
           "calcs": [
-            "sum"
+            "lastNotNull"
           ],
           "displayMode": "table",
           "placement": "bottom"
@@ -1629,7 +1599,7 @@
     },
     {
       "datasource": {
-        "type": "mixed",
+        "type": "datasource",
         "uid": "-- Mixed --"
       },
       "description": "No metric ties $ cost to a specific tool (cost series has no tool_name label). This overlays cost rate and tool-call rate so spikes can be correlated by eye; it is NOT a per-tool dollar breakdown.",

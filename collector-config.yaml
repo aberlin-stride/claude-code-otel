@@ -14,6 +14,8 @@ processors:
 
   batch: {}
 
+  deltatocumulative: {}
+
   # Add resource attributes for better analysis
   resource:
     attributes:
@@ -39,7 +41,7 @@ service:
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [memory_limiter, resource, batch]
+      processors: [memory_limiter, resource, deltatocumulative, batch]
       exporters: [prometheus]
 
     logs:
