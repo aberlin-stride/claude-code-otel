@@ -16,8 +16,13 @@ make status
 
 ### 2. Configure Claude Code
 ```bash
+# either export variables, or add them to your ~/.claude/settings.json
+
 # Enable telemetry
 export CLAUDE_CODE_ENABLE_TELEMETRY=1
+
+# Enable trace telemetry
+export CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1
 
 # Configure exporters
 export OTEL_METRICS_EXPORTER=otlp
@@ -31,13 +36,23 @@ export OTEL_METRIC_EXPORT_INTERVAL=10000
 export OTEL_LOGS_EXPORT_INTERVAL=5000
 
 # Privacy controls
-OTEL_LOG_USER_PROMPTS=1                   # Enable prompt content logging
+export OTEL_LOG_USER_PROMPTS=1                   # Enable prompt content logging
 
 # Tool/skill cost attribution (v2.1.273+)
-OTEL_LOG_TOOL_DETAILS=1                   # Required for Cost by Skill panels to show real skill names
+export OTEL_LOG_TOOL_DETAILS=1                   # Required for Cost by Skill panels to show real skill names
+
+# check here for more variables
+# https://code.claude.com/docs/en/monitoring-usage
 
 # Run Claude Code
 claude
+
+```
+
+### 3. Open the dashboard
+
+```bash
+make open
 ```
 
 
