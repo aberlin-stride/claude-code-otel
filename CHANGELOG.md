@@ -2,6 +2,20 @@
 
 Notable config decisions for this stack. Newest first.
 
+## 2026-10-24
+
+### Parallel dashboard review — 6 findings fixed
+Dual-agent review (overview + session dashboard, each verified against live Prometheus/Loki) found and fixed, confirmed one at a time:
+
+1. `claude-code-dashboard.json` panel 12 ("Development Activity (Hourly)") — dropped the Pull Requests series; `claude_code_pull_request_count_total` doesn't exist in Prometheus, series always fell back to `vector(0)`.
+2. `claude-code-dashboard.json` panel 7 ("Tool Usage Rate Over Time") — `sum by (name)` → `sum by (tool_name)`; `name` isn't a real field on `tool_result` logs.
+3. `claude-code-dashboard.json` panel 14 ("Cumulative Tool Usage") — same `name` → `tool_name` fix.
+4. `claude-code-dashboard.json` panel 8 ("Tool Success Rate") — same `name` → `tool_name` fix, both numerator and denominator.
+5. `claude-code-dashboard.json` panel 13 ("Tool Execution Events") — line_format `{{.name}}` → `{{.tool_name}}`.
+6. `claude-code-session-dashboard.json` panel 102 ("Session Event Timeline") — dropped dead `{{if .name}}...{{end}}` clause from line_format; `tool_name` clause already covers it.
+
+Everything else in both files checked out against live data: units, delta-temporality handling (`sum(increase(...))` instant/lastNotNull pattern), label names, scrape interval.
+
 ## 2026-10-23
 
 ### Added Tempo for trace storage

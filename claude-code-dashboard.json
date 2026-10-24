@@ -893,7 +893,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum by (name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" [5m]))",
+          "expr": "sum by (tool_name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" [5m]))",
           "interval": "",
           "legendFormat": "{{name}}",
           "refId": "A"
@@ -1017,7 +1017,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum by (name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" [$__range]))",
+          "expr": "sum by (tool_name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" [$__range]))",
           "interval": "",
           "legendFormat": "{{name}}",
           "refId": "A",
@@ -1115,7 +1115,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "100 * ((sum by (name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" | success=\"true\" [15m]))) or (0 * sum by (name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" [15m])))) / (sum by (name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" [15m])))",
+          "expr": "100 * ((sum by (tool_name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" | success=\"true\" [15m]))) or (0 * sum by (tool_name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" [15m])))) / (sum by (tool_name) (count_over_time({service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" [15m])))",
           "interval": "",
           "legendFormat": "{{name}}",
           "refId": "A"
@@ -1507,16 +1507,6 @@
           "interval": "",
           "legendFormat": "Commits",
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "sum(increase(claude_code_pull_request_count_total{job=\"otel-collector\"}[1h])) or vector(0)",
-          "interval": "",
-          "legendFormat": "Pull Requests",
-          "refId": "B"
         }
       ],
       "title": "Development Activity (Hourly)",
@@ -1561,7 +1551,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" | line_format \"{{.event_timestamp}} [{{.name}}] {{if eq .success \\\"true\\\"}}✅{{else}}❌{{end}} {{.duration_ms}}ms {{if .error}}ERROR: {{.error}}{{end}}\"",
+          "expr": "{service_name=~\".*claude-code.*\"} |= \"claude_code.tool_result\" | line_format \"{{.event_timestamp}} [{{.tool_name}}] {{if eq .success \\\"true\\\"}}✅{{else}}❌{{end}} {{.duration_ms}}ms {{if .error}}ERROR: {{.error}}{{end}}\"",
           "refId": "A"
         }
       ],
