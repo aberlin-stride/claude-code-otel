@@ -1707,7 +1707,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Trailing 1h cost burn rate against a budget line, sampled at the graph's native resolution. Edit the panel's threshold value to match your budget (default $2/hr). Add a real Grafana alert rule on this query if you want paging instead of a visual line.",
+      "description": "Trailing 1h cost burn rate against a budget line set by the $budget_per_hour dashboard variable (top of page). The background thresholds below are still fixed at $1/$2; edit them separately if you change the budget far from $2/hr. Add a real Grafana alert rule on this query if you want paging instead of a visual line.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1777,9 +1777,19 @@
           "interval": "",
           "legendFormat": "Cost (hourly rate)",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "vector($budget_per_hour)",
+          "interval": "",
+          "legendFormat": "Budget ($budget_per_hour/hr)",
+          "refId": "B"
         }
       ],
-      "title": "\ud83d\udea8 Cost Rate vs Budget Threshold ($2/hr default)",
+      "title": "\ud83d\udea8 Cost Rate vs Budget Threshold",
       "type": "timeseries"
     }
   ],
@@ -1791,7 +1801,29 @@
     "observability"
   ],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "2",
+          "value": "2"
+        },
+        "description": "Budget line for the Cost Rate vs Budget Threshold panel, in $/hr.",
+        "hide": 0,
+        "label": "Budget ($/hr)",
+        "name": "budget_per_hour",
+        "options": [
+          {
+            "selected": true,
+            "text": "2",
+            "value": "2"
+          }
+        ],
+        "query": "2",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
   },
   "time": {
     "from": "now-1h",
