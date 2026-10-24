@@ -1797,7 +1797,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Cost by skill invoked, across all sessions in range. skill_name is absent (shown as \"direct\") for API calls made outside any skill.",
+      "description": "Claude Code redacts the actual skill/plugin name: skill_name is only ever the literal string \"third-party\" when a third-party skill or plugin was involved in the call, or absent (shown as \"direct\") otherwise. This chart can only show that split, never which skill ran. Uses increase() over the full selected range, so a session's very first cost sample can be undercounted (same Prometheus limitation as the other range-total panels).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1840,7 +1840,7 @@
           "instant": true
         }
       ],
-      "title": "Cost by Skill (Selected Range)",
+      "title": "Cost: Direct vs Third-Party Skill (Selected Range)",
       "type": "bargauge"
     }
   ],
@@ -1855,24 +1855,28 @@
     "list": [
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "20",
           "value": "20"
         },
-        "description": "Budget line for the Cost Rate vs Budget Threshold panel, in $/day.",
+        "description": "Budget line for the Cost Rate vs Budget Threshold panel, in $/day. A fixed preset list (not free text) so a bad value can't break the panel's vector($budget_per_day) query.",
         "hide": 0,
+        "includeAll": false,
         "label": "Budget ($/day)",
+        "multi": false,
         "name": "budget_per_day",
         "options": [
-          {
-            "selected": true,
-            "text": "20",
-            "value": "20"
-          }
+          {"selected": false, "text": "5", "value": "5"},
+          {"selected": false, "text": "10", "value": "10"},
+          {"selected": true, "text": "20", "value": "20"},
+          {"selected": false, "text": "30", "value": "30"},
+          {"selected": false, "text": "50", "value": "50"},
+          {"selected": false, "text": "100", "value": "100"},
+          {"selected": false, "text": "200", "value": "200"}
         ],
-        "query": "20",
+        "query": "5,10,20,30,50,100,200",
         "skipUrlSync": false,
-        "type": "textbox"
+        "type": "custom"
       }
     ]
   },

@@ -274,7 +274,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "query_source values observed: \"main\" (top-level session) and \"auxiliary\" (background/non-main query contexts).",
+      "description": "query_source values observed: \"main\" (top-level session thread), \"subagent\" (delegated subagent calls), and \"auxiliary\" (title generation, prompt suggestions, and other background calls).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -338,7 +338,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Cost by skill invoked during this session. skill_name is absent (shown as \"direct\") for API calls made outside any skill.",
+      "description": "Claude Code redacts the actual skill/plugin name: skill_name is only ever the literal string \"third-party\" when a third-party skill or plugin was involved in the call, or absent (shown as \"direct\") otherwise. This chart can only show that split, never which skill ran.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -381,7 +381,7 @@
           "instant": true
         }
       ],
-      "title": "Cost by Skill (Selected Session)",
+      "title": "Cost: Direct vs Third-Party Skill (Selected Session)",
       "type": "bargauge"
     },
     {
