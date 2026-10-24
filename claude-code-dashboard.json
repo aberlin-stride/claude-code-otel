@@ -105,7 +105,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(count by (session_id) (count_over_time(claude_code_session_count_total{job=\"otel-collector\"}[1h])))",
+          "expr": "count(count by (session_id) (count_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\"}[1h])))",
           "interval": "",
           "legendFormat": "Sessions (1h)",
           "refId": "A"
@@ -270,15 +270,15 @@
               },
               {
                 "color": "yellow",
-                "value": 100
+                "value": 5
               },
               {
                 "color": "red",
-                "value": 500
+                "value": 20
               }
             ]
           },
-          "unit": "short"
+          "unit": "currencyUSD"
         },
         "overrides": []
       },
@@ -309,13 +309,14 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(claude_code_lines_of_code_count_total{job=\"otel-collector\"}[1h]))",
+          "expr": "sum(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[$__range]))",
           "interval": "",
-          "legendFormat": "Lines Changed (1h)",
-          "refId": "A"
+          "legendFormat": "Cost (range)",
+          "refId": "A",
+          "instant": true
         }
       ],
-      "title": "Lines of Code (1h)",
+      "title": "Cost (Selected Range)",
       "type": "stat"
     },
     {
