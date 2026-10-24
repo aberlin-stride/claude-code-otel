@@ -146,6 +146,7 @@
         },
         "overrides": []
       },
+      "description": "A session's very first cost sample inside this window can be undercounted (Prometheus increase() limitation).",
       "gridPos": {
         "h": 4,
         "w": 6,
@@ -202,11 +203,11 @@
               },
               {
                 "color": "yellow",
-                "value": 10000
+                "value": 250000
               },
               {
                 "color": "red",
-                "value": 50000
+                "value": 1000000
               }
             ]
           },
@@ -214,6 +215,7 @@
         },
         "overrides": []
       },
+      "description": "Sum of all token types including cacheRead, which usually dominates the total. Thresholds are a rough default; tune to your usage.",
       "gridPos": {
         "h": 4,
         "w": 6,
@@ -282,6 +284,7 @@
         },
         "overrides": []
       },
+      "description": "A session's very first cost sample inside this range can be undercounted (Prometheus increase() limitation).",
       "gridPos": {
         "h": 4,
         "w": 6,
@@ -392,6 +395,7 @@
         "x": 0,
         "y": 6
       },
+      "description": "Trailing 1h cost per model, sampled at the graph's native resolution. Counters reset per session, so a session's very first cost sample inside a sampled window can be undercounted (Prometheus increase() limitation).",
       "id": 5,
       "options": {
         "legend": {
@@ -413,7 +417,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (model) (increase(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[$__interval]))",
+          "expr": "sum by (model) (increase(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[1h]))",
           "interval": "",
           "legendFormat": "{{model}}",
           "refId": "A"
@@ -1478,6 +1482,7 @@
         "x": 12,
         "y": 57
       },
+      "description": "Trailing 1h commit/PR count, sampled at the graph's native resolution. A session's first commit/PR inside a sampled window can be undercounted (Prometheus increase() limitation).",
       "id": 12,
       "options": {
         "legend": {
@@ -1498,7 +1503,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(claude_code_commit_count_total{job=\"otel-collector\"}[$__interval])) or vector(0)",
+          "expr": "sum(increase(claude_code_commit_count_total{job=\"otel-collector\"}[1h])) or vector(0)",
           "interval": "",
           "legendFormat": "Commits",
           "refId": "A"
@@ -1508,7 +1513,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(claude_code_pull_request_count_total{job=\"otel-collector\"}[$__interval])) or vector(0)",
+          "expr": "sum(increase(claude_code_pull_request_count_total{job=\"otel-collector\"}[1h])) or vector(0)",
           "interval": "",
           "legendFormat": "Pull Requests",
           "refId": "B"
@@ -1702,7 +1707,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Hourly cost burn rate against a budget line. Edit the panel's threshold value to match your budget (default $2/hr). Add a real Grafana alert rule on this query if you want paging instead of a visual line.",
+      "description": "Trailing 1h cost burn rate against a budget line, sampled at the graph's native resolution. Edit the panel's threshold value to match your budget (default $2/hr). Add a real Grafana alert rule on this query if you want paging instead of a visual line.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1768,7 +1773,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[$__interval]))",
+          "expr": "sum(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[1h]))",
           "interval": "",
           "legendFormat": "Cost (hourly rate)",
           "refId": "A"

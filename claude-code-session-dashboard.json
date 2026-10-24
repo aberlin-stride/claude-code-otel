@@ -100,6 +100,7 @@
         },
         "overrides": []
       },
+      "description": "Cumulative cost per model for this session (running total, not a per-interval delta — avoids the counter-reset undercount that increase() has on a short-lived series).",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -126,13 +127,13 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (model, effort) (increase(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__interval]))",
+          "expr": "sum by (model) (max_over_time(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__interval]))",
           "interval": "",
-          "legendFormat": "{{model}} ({{effort}})",
+          "legendFormat": "{{model}}",
           "refId": "A"
         }
       ],
-      "title": "Cost by Model & Effort (Selected Session)",
+      "title": "Cost by Model, Cumulative (Selected Session)",
       "type": "timeseries"
     },
     {
@@ -206,138 +207,12 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "mappings": [],
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 9
-      },
-      "id": 20,
-      "options": {
-        "displayLabels": [
-          "percent",
-          "value"
-        ],
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "values": [
-            "value",
-            "percent"
-          ]
-        },
-        "pieType": "donut",
-        "reduceOptions": {
-          "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": ""
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "sum by (type) (max_over_time(claude_code_active_time_seconds_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
-          "interval": "",
-          "legendFormat": "{{type}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Active Time: User vs CLI (Selected Session)",
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "mappings": [],
-          "unit": "currencyUSD"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 9
-      },
-      "id": 21,
-      "options": {
-        "displayLabels": [
-          "percent",
-          "value"
-        ],
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "values": [
-            "value",
-            "percent"
-          ]
-        },
-        "pieType": "donut",
-        "reduceOptions": {
-          "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": ""
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "sum by (query_source) (max_over_time(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
-          "interval": "",
-          "legendFormat": "{{query_source}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Cost by Source: Main vs Subagent (Selected Session)",
-      "type": "piechart"
-    },
-    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 9
       },
       "id": 101,
       "panels": [],
@@ -354,7 +229,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 10
       },
       "id": 102,
       "options": {
