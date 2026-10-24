@@ -24,9 +24,14 @@
   "liveNow": false,
   "panels": [
     {
-      "title": "📊 Overview",
+      "title": "\ud83d\udcca Overview",
       "type": "row",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
       "collapsed": false
     },
     {
@@ -75,7 +80,9 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": ""
         },
         "textMode": "auto"
@@ -141,7 +148,9 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": ""
         },
         "textMode": "auto"
@@ -207,7 +216,9 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": ""
         },
         "textMode": "auto"
@@ -273,7 +284,9 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": ""
         },
         "textMode": "auto"
@@ -294,9 +307,308 @@
       "type": "stat"
     },
     {
-      "title": "💰 Cost & Usage Analysis",
+      "title": "\ud83d\udd2c Session Drilldown",
       "type": "row",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 5},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "collapsed": false
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "USD",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
+      "id": 18,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (model, effort) (increase(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
+          "interval": "",
+          "legendFormat": "{{model}} ({{effort}})",
+          "refId": "A"
+        }
+      ],
+      "title": "Cost by Model & Effort (Selected Session)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.3
+              },
+              {
+                "color": "green",
+                "value": 0.6
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      },
+      "id": 19,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(claude_code_token_usage_tokens_total{job=\"otel-collector\", session_id=\"$session_id\", type=\"cacheRead\"}[$__range])) / sum(increase(claude_code_token_usage_tokens_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
+          "interval": "",
+          "legendFormat": "Cache Hit Ratio",
+          "refId": "A"
+        }
+      ],
+      "title": "Cache Hit Ratio (Selected Session)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 20,
+      "options": {
+        "displayLabels": [
+          "percent",
+          "value"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (type) (increase(claude_code_active_time_seconds_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
+          "interval": "",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Time: User vs CLI (Selected Session)",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "id": 21,
+      "options": {
+        "displayLabels": [
+          "percent",
+          "value"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (query_source) (increase(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
+          "interval": "",
+          "legendFormat": "{{query_source}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Cost by Source: Main vs Subagent (Selected Session)",
+      "type": "piechart"
+    },
+    {
+      "title": "\ud83d\udcb0 Cost & Usage Analysis",
+      "type": "row",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
       "collapsed": false
     },
     {
@@ -359,12 +671,15 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 6
+        "y": 23
       },
       "id": 5,
       "options": {
         "legend": {
-          "calcs": ["max", "mean"],
+          "calcs": [
+            "max",
+            "mean"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -526,12 +841,15 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 6
+        "y": 23
       },
       "id": 6,
       "options": {
         "legend": {
-          "calcs": ["max", "mean"],
+          "calcs": [
+            "max",
+            "mean"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -654,12 +972,16 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 31
       },
       "id": 15,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max", "mean"],
+          "calcs": [
+            "lastNotNull",
+            "max",
+            "mean"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -684,9 +1006,14 @@
       "type": "timeseries"
     },
     {
-      "title": "🔧 Tool Usage & Performance",
+      "title": "\ud83d\udd27 Tool Usage & Performance",
       "type": "row",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 22},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 39
+      },
       "collapsed": false
     },
     {
@@ -819,12 +1146,15 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 23
+        "y": 40
       },
       "id": 7,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "mean"],
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -971,12 +1301,15 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 23
+        "y": 40
       },
       "id": 14,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -1067,12 +1400,14 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 23
+        "y": 40
       },
       "id": 8,
       "options": {
         "legend": {
-          "calcs": ["last"],
+          "calcs": [
+            "last"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -1097,9 +1432,14 @@
       "type": "timeseries"
     },
     {
-      "title": "⚡ Performance & Errors",
+      "title": "\u26a1 Performance & Errors",
       "type": "row",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 39},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 56
+      },
       "collapsed": false
     },
     {
@@ -1162,12 +1502,15 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 40
+        "y": 57
       },
       "id": 9,
       "options": {
         "legend": {
-          "calcs": ["mean", "max"],
+          "calcs": [
+            "mean",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -1251,12 +1594,14 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 40
+        "y": 57
       },
       "id": 10,
       "options": {
         "legend": {
-          "calcs": ["sum"],
+          "calcs": [
+            "sum"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -1281,9 +1626,14 @@
       "type": "timeseries"
     },
     {
-      "title": "📝 User Activity & Productivity",
+      "title": "\ud83d\udcdd User Activity & Productivity",
       "type": "row",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 48},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 65
+      },
       "collapsed": false
     },
     {
@@ -1346,12 +1696,14 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 49
+        "y": 66
       },
       "id": 11,
       "options": {
         "legend": {
-          "calcs": ["sum"],
+          "calcs": [
+            "sum"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -1435,12 +1787,14 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 49
+        "y": 66
       },
       "id": 12,
       "options": {
         "legend": {
-          "calcs": ["sum"],
+          "calcs": [
+            "sum"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -1475,9 +1829,14 @@
       "type": "timeseries"
     },
     {
-      "title": "🔍 Event Logs",
+      "title": "\ud83d\udd0d Event Logs",
       "type": "row",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 57},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 74
+      },
       "collapsed": false
     },
     {
@@ -1489,7 +1848,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 58
+        "y": 75
       },
       "id": 13,
       "options": {
@@ -1508,7 +1867,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{service_name=\"claude-code\"} |= \"claude_code.tool_result\" | line_format \"{{.event_timestamp}} [{{.tool_name}}] {{if eq .success \\\"true\\\"}}✅{{else}}❌{{end}} {{.duration_ms}}ms {{if .error}}ERROR: {{.error}}{{end}}\"",
+          "expr": "{service_name=\"claude-code\"} |= \"claude_code.tool_result\" | line_format \"{{.event_timestamp}} [{{.tool_name}}] {{if eq .success \\\"true\\\"}}\u2705{{else}}\u274c{{end}} {{.duration_ms}}ms {{if .error}}ERROR: {{.error}}{{end}}\"",
           "refId": "A"
         }
       ],
@@ -1524,7 +1883,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 58
+        "y": 75
       },
       "id": 17,
       "options": {
@@ -1543,287 +1902,21 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{service_name=\"claude-code\"} |= \"claude_code.api_error\" | line_format \"{{.event_timestamp}} [{{.model}}] ❌ HTTP {{.status_code}} {{.duration_ms}}ms ERROR: {{.error}}\"",
+          "expr": "{service_name=\"claude-code\"} |= \"claude_code.api_error\" | line_format \"{{.event_timestamp}} [{{.model}}] \u274c HTTP {{.status_code}} {{.duration_ms}}ms ERROR: {{.error}}\"",
           "refId": "A"
         }
       ],
       "title": "API Error Events",
       "type": "logs"
-    },
-    {
-      "title": "🔬 Session Drilldown",
-      "type": "row",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 66},
-      "collapsed": false
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "USD",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "bars",
-            "fillOpacity": 60,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "vis": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "currencyUSD"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 67
-      },
-      "id": 18,
-      "options": {
-        "legend": {
-          "calcs": ["sum"],
-          "displayMode": "table",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "sum by (model, effort) (increase(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
-          "interval": "",
-          "legendFormat": "{{model}} ({{effort}})",
-          "refId": "A"
-        }
-      ],
-      "title": "Cost by Model & Effort (Selected Session)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "max": 1,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 0.3
-              },
-              {
-                "color": "green",
-                "value": 0.6
-              }
-            ]
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 67
-      },
-      "id": 19,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "reduceOptions": {
-          "values": false,
-          "calcs": ["lastNotNull"],
-          "fields": ""
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "sum(increase(claude_code_token_usage_tokens_total{job=\"otel-collector\", session_id=\"$session_id\", type=\"cacheRead\"}[$__range])) / sum(increase(claude_code_token_usage_tokens_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
-          "interval": "",
-          "legendFormat": "Cache Hit Ratio",
-          "refId": "A"
-        }
-      ],
-      "title": "Cache Hit Ratio (Selected Session)",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "mappings": [],
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 75
-      },
-      "id": 20,
-      "options": {
-        "displayLabels": ["percent", "value"],
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "values": ["value", "percent"]
-        },
-        "pieType": "donut",
-        "reduceOptions": {
-          "values": false,
-          "calcs": ["sum"],
-          "fields": ""
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "sum by (type) (increase(claude_code_active_time_seconds_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
-          "interval": "",
-          "legendFormat": "{{type}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Active Time: User vs CLI (Selected Session)",
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "mappings": [],
-          "unit": "currencyUSD"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 75
-      },
-      "id": 21,
-      "options": {
-        "displayLabels": ["percent", "value"],
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "values": ["value", "percent"]
-        },
-        "pieType": "donut",
-        "reduceOptions": {
-          "values": false,
-          "calcs": ["sum"],
-          "fields": ""
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "sum by (query_source) (increase(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
-          "interval": "",
-          "legendFormat": "{{query_source}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Cost by Source: Main vs Subagent (Selected Session)",
-      "type": "piechart"
     }
   ],
   "refresh": "30s",
   "schemaVersion": 27,
   "style": "dark",
-  "tags": ["claude-code", "observability"],
+  "tags": [
+    "claude-code",
+    "observability"
+  ],
   "templating": {
     "list": [
       {
