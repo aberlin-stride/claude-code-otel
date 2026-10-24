@@ -56,6 +56,8 @@ services:
     image: grafana/loki:latest
     container_name: loki
     command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "127.0.0.1:3100:3100"
     volumes:
       - ./loki-config.yaml:/etc/loki/local-config.yaml:ro
       - loki-data:/loki
@@ -90,6 +92,7 @@ services:
       - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
       - ./grafana-dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
       - ./claude-code-dashboard.json:/var/lib/grafana/dashboards/claude-code-dashboard.json:ro
+      - ./claude-code-session-dashboard.json:/var/lib/grafana/dashboards/claude-code-session-dashboard.json:ro
     ports:
       - "127.0.0.1:3000:3000"
     restart: unless-stopped
