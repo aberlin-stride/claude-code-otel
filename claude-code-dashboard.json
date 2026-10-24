@@ -735,7 +735,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 46
       },
       "collapsed": false
     },
@@ -869,7 +869,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 39
+        "y": 47
       },
       "id": 7,
       "options": {
@@ -996,7 +996,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 39
+        "y": 47
       },
       "id": 14,
       "options": {
@@ -1093,7 +1093,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 47
+        "y": 55
       },
       "id": 8,
       "options": {
@@ -1131,7 +1131,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 55
+        "y": 63
       },
       "collapsed": false
     },
@@ -1195,7 +1195,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 56
+        "y": 64
       },
       "id": 9,
       "options": {
@@ -1287,7 +1287,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 56
+        "y": 64
       },
       "id": 10,
       "options": {
@@ -1325,7 +1325,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 64
+        "y": 72
       },
       "collapsed": false
     },
@@ -1389,7 +1389,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 65
+        "y": 73
       },
       "id": 11,
       "options": {
@@ -1480,7 +1480,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 65
+        "y": 73
       },
       "description": "Trailing 1h commit/PR count, sampled at the graph's native resolution. A session's first commit/PR inside a sampled window can be undercounted (Prometheus increase() limitation).",
       "id": 12,
@@ -1529,7 +1529,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 73
+        "y": 81
       },
       "collapsed": false
     },
@@ -1542,7 +1542,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 74
+        "y": 82
       },
       "id": 13,
       "options": {
@@ -1577,7 +1577,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 74
+        "y": 82
       },
       "id": 17,
       "options": {
@@ -1841,6 +1841,57 @@
         }
       ],
       "title": "Cost by Skill (Selected Range)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Cost by MCP tool, across all sessions in range. Only covers tool calls routed through MCP servers (mcp_tool.name / mcp_server.name labels on the cost metric) — built-in tools (Read, Edit, Bash, etc.) carry no tool_name on this metric and cannot be split out; see 'Cost Rate vs Tool-Call Rate' panel for those. User-configured MCP servers show as \"custom\" unless OTEL_LOG_TOOL_DETAILS=1 (v2.1.273+). Uses increase() over the full selected range, so a session's very first cost sample can be undercounted.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "id": 24,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (mcp_tool_name) (label_replace(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[$__range]), \"mcp_tool_name\", \"none\", \"mcp_tool_name\", \"^$\"))",
+          "interval": "",
+          "legendFormat": "{{mcp_tool_name}}",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "title": "Cost by MCP Tool (Selected Range)",
       "type": "bargauge"
     }
   ],

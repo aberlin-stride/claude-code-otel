@@ -385,12 +385,63 @@
       "type": "bargauge"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Cost by MCP tool for this session. Only covers tool calls routed through MCP servers (mcp_tool.name / mcp_server.name labels on the cost metric) — built-in tools (Read, Edit, Bash, etc.) carry no tool_name on this metric and cannot be split out. User-configured MCP servers show as \"custom\" unless OTEL_LOG_TOOL_DETAILS=1 (v2.1.273+).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
+      "id": 103,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (mcp_tool_name) (label_replace(max_over_time(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]), \"mcp_tool_name\", \"none\", \"mcp_tool_name\", \"^$\"))",
+          "interval": "",
+          "legendFormat": "{{mcp_tool_name}}",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "title": "Cost by MCP Tool (Selected Session)",
+      "type": "bargauge"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 25
+        "y": 33
       },
       "id": 101,
       "panels": [],
@@ -407,7 +458,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 34
       },
       "id": 102,
       "options": {
