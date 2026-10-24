@@ -349,7 +349,7 @@
         "type": "loki",
         "uid": "loki"
       },
-      "description": "What happened in this session: prompts, assistant replies, tool calls, decisions, API calls, in order, with full prompt/response text.",
+      "description": "What happened in this session: prompts, tool calls, decisions, API calls, in order, with full prompt text (assistant responses are not exported via OTel).",
       "gridPos": {
         "h": 14,
         "w": 24,
@@ -373,7 +373,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{service_name=~\".*claude-code.*\"} | session_id=\"$session_id\" | session_id != \"\" | line_format \"{{.event_timestamp}} [{{.event_name}}]{{if .tool_name}} tool={{.tool_name}}{{end}}{{if .model}} model={{.model}}{{end}}{{if .prompt_length}} prompt_len={{.prompt_length}}{{end}}{{if .prompt}} prompt={{.prompt}}{{end}}{{if .response_length}} resp_len={{.response_length}}{{end}}{{if .response}} response={{.response}}{{end}}{{if .duration_ms}} dur={{.duration_ms}}ms{{end}}{{if .decision_type}} decision={{.decision_type}}{{end}}{{if .success}} success={{.success}}{{end}}\"",
+          "expr": "{service_name=~\".*claude-code.*\"} | session_id=\"$session_id\" | session_id != \"\" | line_format \"{{.event_timestamp}} [{{.event_name}}]{{if .name}} tool={{.name}}{{end}}{{if .tool_name}} tool={{.tool_name}}{{end}}{{if .model}} model={{.model}}{{end}}{{if .prompt_length}} prompt_len={{.prompt_length}}{{end}}{{if .prompt}} prompt={{.prompt}}{{end}}{{if .duration_ms}} dur={{.duration_ms}}ms{{end}}{{if .decision}} decision={{.decision}}{{end}}{{if .success}} success={{.success}}{{end}}\"",
           "refId": "A"
         }
       ],
