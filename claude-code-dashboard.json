@@ -735,7 +735,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 38
       },
       "collapsed": false
     },
@@ -869,7 +869,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 31
+        "y": 39
       },
       "id": 7,
       "options": {
@@ -996,7 +996,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 31
+        "y": 39
       },
       "id": 14,
       "options": {
@@ -1093,7 +1093,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 39
+        "y": 47
       },
       "id": 8,
       "options": {
@@ -1131,7 +1131,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 47
+        "y": 55
       },
       "collapsed": false
     },
@@ -1195,7 +1195,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 48
+        "y": 56
       },
       "id": 9,
       "options": {
@@ -1287,7 +1287,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 48
+        "y": 56
       },
       "id": 10,
       "options": {
@@ -1325,7 +1325,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 56
+        "y": 64
       },
       "collapsed": false
     },
@@ -1389,7 +1389,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 57
+        "y": 65
       },
       "id": 11,
       "options": {
@@ -1480,7 +1480,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 57
+        "y": 65
       },
       "description": "Trailing 1h commit/PR count, sampled at the graph's native resolution. A session's first commit/PR inside a sampled window can be undercounted (Prometheus increase() limitation).",
       "id": 12,
@@ -1529,7 +1529,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 65
+        "y": 73
       },
       "collapsed": false
     },
@@ -1542,7 +1542,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 66
+        "y": 74
       },
       "id": 13,
       "options": {
@@ -1577,7 +1577,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 66
+        "y": 74
       },
       "id": 17,
       "options": {
@@ -1791,6 +1791,57 @@
       ],
       "title": "\ud83d\udea8 Cost Rate vs Budget Threshold",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Cost by skill invoked, across all sessions in range. skill_name is absent (shown as \"direct\") for API calls made outside any skill.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "id": 23,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (skill_name) (label_replace(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[$__range]), \"skill_name\", \"direct\", \"skill_name\", \"^$\"))",
+          "interval": "",
+          "legendFormat": "{{skill_name}}",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "title": "Cost by Skill (Selected Range)",
+      "type": "bargauge"
     }
   ],
   "refresh": "30s",

@@ -100,7 +100,7 @@
         },
         "overrides": []
       },
-      "description": "Cumulative cost per model for this session (running total, not a per-interval delta — avoids the counter-reset undercount that increase() has on a short-lived series).",
+      "description": "Cumulative cost per model/effort for this session (running total, not a per-interval delta — avoids the counter-reset undercount that increase() has on a short-lived series).",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -127,13 +127,13 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (model) (max_over_time(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__interval]))",
+          "expr": "sum by (model, effort) (max_over_time(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__interval]))",
           "interval": "",
-          "legendFormat": "{{model}}",
+          "legendFormat": "{{model}} ({{effort}})",
           "refId": "A"
         }
       ],
-      "title": "Cost by Model, Cumulative (Selected Session)",
+      "title": "Cost by Model & Effort, Cumulative (Selected Session)",
       "type": "timeseries"
     },
     {
@@ -207,12 +207,190 @@
       "type": "stat"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
+      "id": 20,
+      "options": {
+        "displayLabels": [
+          "percent",
+          "value"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (type) (max_over_time(claude_code_active_time_seconds_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
+          "interval": "",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Time: User vs CLI (Selected Session)",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "query_source values observed: \"main\" (top-level session) and \"auxiliary\" (background/non-main query contexts).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 9
+      },
+      "id": 21,
+      "options": {
+        "displayLabels": [
+          "percent",
+          "value"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (query_source) (max_over_time(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]))",
+          "interval": "",
+          "legendFormat": "{{query_source}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Cost by Query Source (Selected Session)",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Cost by skill invoked during this session. skill_name is absent (shown as \"direct\") for API calls made outside any skill.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 22,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (skill_name) (label_replace(max_over_time(claude_code_cost_usage_USD_total{job=\"otel-collector\", session_id=\"$session_id\"}[$__range]), \"skill_name\", \"direct\", \"skill_name\", \"^$\"))",
+          "interval": "",
+          "legendFormat": "{{skill_name}}",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "title": "Cost by Skill (Selected Session)",
+      "type": "bargauge"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 9
+        "y": 25
       },
       "id": 101,
       "panels": [],
@@ -229,7 +407,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 10
+        "y": 26
       },
       "id": 102,
       "options": {
