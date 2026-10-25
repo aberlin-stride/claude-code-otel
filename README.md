@@ -5,6 +5,13 @@ A forked and improved version of https://github.com/ColeMurray/claude-code-otel
 
 ## 🚀 Quick Start
 
+### Prerequisites
+- docker
+- docker-compose
+- make
+- claude-code
+- (optional, but useful) grafana-mcp
+
 ### 1. Start the Stack
 ```bash
 # Start all services
@@ -54,8 +61,6 @@ claude
 ```bash
 make open
 ```
-
-
 
 
 ## Claude Code Observability Stack
