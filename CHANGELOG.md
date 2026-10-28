@@ -2,6 +2,19 @@
 
 Notable config decisions for this stack. Newest first.
 
+## 2026-10-28
+
+### Added pdca/pdlc skill cost breakdown panels
+`claude-code-dashboard.json` — 3 new panels under a "🧵 PDCA / PDLC Cost Breakdown" row (ids 41-43), confirmed against live Prometheus:
+
+1. **Cost by Skill — pdca/pdlc Normalized** — the existing "Cost by Skill" panel splits pdca into 7 separate bars (`pdca-framework`, `pdca:act`, `pdca:check`, `pdca:cycle`, `pdca:do`, `pdca:pdca-framework`, `pdca:plan`), so pdca's total never shows as one number. This panel rolls all `pdca.*` into one `pdca` series.
+2. **pdca vs pdlc Cost: Main vs Subagent** — same rollup split by `query_source` (main vs subagent fan-out).
+3. **PDLC Cost by Agent** — pdlc cost by `agent_name` (`pdlc-developer-agent` vs `pdlc-quality-agent`).
+
+**Real bug found while building these:** `pdlc-developer-agent` subagent cost rows carry no `skill_name` label at all (confirmed live: `claude_code_cost_usage_USD_total{agent_name="pdlc-developer-agent"}` has no `skill_name` key). The existing "Cost by Skill" panel was undercounting pdlc by roughly 90% as a result (7d actual: $39.30 total pdlc cost vs ~$3.40 visible under `skill_name="pdlc"`). All 3 new panels fall back to `agent_name=~"pdlc-.*"` to recover the missing cost. Not fixed upstream in the original panel — left as-is per working agreement (confirm before changing existing panels); only new panels added this round.
+
+`beads` has no cost attribution at all — it's a plain Bash-invoked CLI, not an MCP server or skill, and built-in tool calls carry no cost split (confirmed: no `beads` value in `skill_name`, `mcp_server_name`, or `plugin_name`). No dashboard fix possible without instrumenting it as an MCP server.
+
 ## 2026-10-24
 
 ### Parallel dashboard review — 6 findings fixed

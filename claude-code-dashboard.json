@@ -1858,6 +1858,99 @@
       ],
       "title": "Cost by MCP Tool (Selected Range)",
       "type": "bargauge"
+    },
+    {
+      "collapsed": false,
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 90 },
+      "id": 40,
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A" }],
+      "title": "🧵 PDCA / PDLC Cost Breakdown",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "pdca:* phases (plan/do/check/act/cycle) rolled into one \"pdca\" bucket. pdlc includes an agent_name=~\"pdlc-.*\" fallback because the pdlc-developer-agent subagent never sets skill_name, so skill_name=\"pdlc\" alone undercounts pdlc by roughly 90%. Uses increase() over $__range (same first-sample caveat as other range-total panels).",
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "mappings": [], "unit": "currencyUSD" },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 91 },
+      "id": 41,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showUnfilled": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum by (skill) (label_replace(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\", skill_name=~\"pdca.*\"}[$__range]), \"skill\", \"pdca\", \"\", \"\") or label_replace(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\", skill_name=\"pdlc\"}[$__range]), \"skill\", \"pdlc\", \"\", \"\") or label_replace(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\", agent_name=~\"pdlc-.*\", skill_name=\"\"}[$__range]), \"skill\", \"pdlc\", \"\", \"\"))",
+          "interval": "",
+          "legendFormat": "{{skill}}",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "title": "Cost by Skill — pdca/pdlc Normalized (Selected Range)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "Same normalized pdca/pdlc rollup, split by query_source (main session vs subagent fan-out). Shows how much of each skill's cost comes from spawned subagents.",
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "mappings": [], "unit": "currencyUSD" },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 99 },
+      "id": 42,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showUnfilled": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum by (skill, query_source) (label_replace(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\", skill_name=~\"pdca.*\"}[$__range]), \"skill\", \"pdca\", \"\", \"\") or label_replace(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\", skill_name=\"pdlc\"}[$__range]), \"skill\", \"pdlc\", \"\", \"\") or label_replace(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\", agent_name=~\"pdlc-.*\", skill_name=\"\"}[$__range]), \"skill\", \"pdlc\", \"\", \"\"))",
+          "interval": "",
+          "legendFormat": "{{skill}} ({{query_source}})",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "title": "pdca vs pdlc Cost: Main vs Subagent",
+      "type": "bargauge"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "pdlc subagent cost split by agent_name (pdlc-developer-agent does the TDD work, pdlc-quality-agent reviews). Filters on agent_name directly since skill_name is unreliable on these subagent rows.",
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "mappings": [], "unit": "currencyUSD" },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 99 },
+      "id": 43,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showUnfilled": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum by (agent_name) (increase(claude_code_cost_usage_USD_total{job=\"otel-collector\", agent_name=~\"pdlc-.*\"}[$__range]))",
+          "interval": "",
+          "legendFormat": "{{agent_name}}",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "title": "PDLC Cost by Agent (Selected Range)",
+      "type": "bargauge"
     }
   ],
   "refresh": "30s",
@@ -1904,5 +1997,5 @@
   "timezone": "",
   "title": "Claude Code Observability",
   "uid": "claude-code-obs",
-  "version": 1
+  "version": 2
 }
