@@ -61,6 +61,11 @@ class ExemptionTrackerTest(unittest.TestCase):
         a1, b1, a2, b2 = miss("s1", 1), miss("s2", 2), miss("s1", 3), miss("s2", 4)
         self.assertEqual(cm.ExemptionTracker().non_exempt([a1, b1, a2, b2]), [a2, b2])
 
+    def test_first_event_after_a_successful_compaction_is_exempt(self):
+        e1, e2, e3 = miss("s1", 1), miss("s1", 3), miss("s1", 4)
+        compaction = cm.Compaction(session_id="s1", event_sequence=2, success=True)
+        self.assertEqual(cm.ExemptionTracker().non_exempt([e1, compaction, e2, e3]), [e3])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -42,10 +42,17 @@ def is_significant(event):
 class ExemptionTracker:
     def __init__(self):
         self._seen_sessions = set()
+        self._post_compaction = set()
 
     def non_exempt(self, items):
         result = []
         for event in items:
+            if isinstance(event, Compaction):
+                self._post_compaction.add(event.session_id)
+                continue
+            if event.session_id in self._post_compaction:
+                self._post_compaction.discard(event.session_id)
+                continue
             if event.session_id not in self._seen_sessions:
                 self._seen_sessions.add(event.session_id)
                 continue
