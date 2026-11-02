@@ -512,5 +512,22 @@ class MonitorWiringTest(unittest.TestCase):
         self.assertEqual(cm.Dedup().fresh([a, b]), [a, b])
 
 
+class FormatGroupTest(unittest.TestCase):
+    def test_format_group_summarizes_count_worst_rate_sources_and_tokens(self):
+        session = "116076d4-cf41-45e7-83bc-086223d5666e"
+        agent = "agent:builtin:general-purpose"
+
+        def event(read, creation, input_tokens, source):
+            return cm.Event(cache_read=read, cache_creation=creation, input_tokens=input_tokens,
+                            session_id=session, query_source=source)
+
+        events = [event(0, 30000, 2, agent), event(15000, 15000, 0, agent),
+                  event(18000, 12000, 0, "repl_main_thread")]
+        self.assertEqual(cm.format_group(events), (
+            "Cache miss: 3 requests, worst 0% hit rate",
+            "agent:builtin:general-purpose ×2 · repl_main_thread ×1"
+            " · 90,002 prompt tokens · session 116076d4"))
+
+
 if __name__ == "__main__":
     unittest.main()

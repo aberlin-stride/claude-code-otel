@@ -237,6 +237,22 @@ class Monitor:
         return POLL_INTERVAL
 
 
+def _percent(event):
+    return 100 * event.cache_read // prompt_tokens(event)
+
+
+def format_group(events):
+    counts = {}
+    for event in events:
+        counts[event.query_source] = counts.get(event.query_source, 0) + 1
+    sources = " · ".join(
+        f"{source} ×{count}" for source, count in sorted(counts.items(), key=lambda kv: (-kv[1], kv[0])))
+    total = sum(prompt_tokens(event) for event in events)
+    title = f"Cache miss: {len(events)} requests, worst {min(_percent(e) for e in events)}% hit rate"
+    message = f"{sources} · {total:,} prompt tokens · session {events[0].session_id[:8]}"
+    return (title, message)
+
+
 def run(monitor, sleep=time.sleep, should_stop=lambda: False):
     while not should_stop():
         sleep(monitor.poll())
