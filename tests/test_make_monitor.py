@@ -39,6 +39,12 @@ class MakeMonitorTest(unittest.TestCase):
             ["make", target, "MONITOR_PID=" + self.pidfile, "MONITOR_LOG=" + self.logfile],
             cwd=REPO, env=self.env, capture_output=True, text=True, timeout=30)
 
+    def write_stale_pidfile(self):
+        finished = subprocess.Popen(["true"])
+        finished.wait()
+        with open(self.pidfile, "w") as f:
+            f.write(str(finished.pid))
+
     def read_pid(self):
         with open(self.pidfile) as f:
             return int(f.read())
@@ -67,6 +73,21 @@ class MakeMonitorTest(unittest.TestCase):
 
     def test_stop_monitor_without_a_pidfile_succeeds(self):
         self.assertEqual(self.make("stop-monitor").returncode, 0)
+
+    # Guard added after the recipe existed: passed on first run (the recipe
+    # ignores kill's exit status), so it was never RED.
+    def test_stop_monitor_tolerates_a_stale_pidfile(self):
+        self.write_stale_pidfile()
+        self.assertEqual(self.make("stop-monitor").returncode, 0)
+        self.assertFalse(os.path.exists(self.pidfile))
+
+    # Guard added after the recipe existed (kill -0 already rejects dead pids), never RED.
+    def test_monitor_replaces_a_stale_pidfile_with_a_live_process(self):
+        self.write_stale_pidfile()
+        stale = self.read_pid()
+        self.make("monitor")
+        self.assertNotEqual(self.read_pid(), stale)
+        self.assertTrue(alive(self.read_pid()))
 
 
 if __name__ == "__main__":
