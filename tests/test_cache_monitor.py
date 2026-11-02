@@ -488,6 +488,11 @@ class MonitorWiringTest(unittest.TestCase):
         monitor = self.monitor(fetch)
         self.assertEqual([monitor.poll(), monitor.poll()], [5, 10])
 
+    def test_poll_backs_off_when_the_response_has_an_unexpected_shape(self):
+        fetch, _ = scripted_fetch({}, {"status": "error"})
+        monitor = self.monitor(fetch)
+        self.assertEqual([monitor.poll(), monitor.poll()], [5, 10])
+
     def test_query_asks_for_forward_order_and_a_limit_of_1000(self):
         with FakeLoki(loki_response()) as loki:
             cm.loki_fetch(loki.url)(1793634000000000000)

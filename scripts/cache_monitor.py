@@ -224,13 +224,12 @@ class Monitor:
     def poll(self):
         started = self._now_ns()
         try:
-            response = self._fetch(self._since)
-        except (OSError, ValueError, http.client.HTTPException) as error:
+            items = parse_events(self._fetch(self._since))
+        except (OSError, ValueError, http.client.HTTPException, KeyError, TypeError) as error:
             if not self._backoff.in_outage:
                 logging.getLogger(__name__).warning("Loki unreachable, backing off: %s", error)
             return self._backoff.failed()
         self._backoff.succeeded()
-        items = parse_events(response)
         self._since = started - OVERLAP_NS
         for event in self._exemptions.non_exempt(self._dedup.fresh(items)):
             if is_significant(event) and self._cooldown.allow(event.session_id):
