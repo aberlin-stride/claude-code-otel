@@ -132,3 +132,6 @@ class Backoff:
         delay = self._delay
         self._delay = min(self._delay * 2, self._cap)
         return delay
+
+    def succeeded(self):
+        self._delay = self._base

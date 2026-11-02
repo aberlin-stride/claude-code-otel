@@ -175,6 +175,13 @@ class BackoffTest(unittest.TestCase):
         backoff = cm.Backoff(5, 60)
         self.assertEqual([backoff.failed() for _ in range(6)], [5, 10, 20, 40, 60, 60])
 
+    def test_success_resets_the_delay_to_the_base(self):
+        backoff = cm.Backoff(5, 60)
+        backoff.failed()
+        backoff.failed()
+        backoff.succeeded()
+        self.assertEqual(backoff.failed(), 5)
+
 
 if __name__ == "__main__":
     unittest.main()
