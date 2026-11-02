@@ -16,6 +16,7 @@ class Event:
     input_tokens: int
     session_id: str = ""
     event_sequence: int = 0
+    query_source: str = ""
 
 
 @dataclass(frozen=True)
@@ -79,6 +80,7 @@ def _parse_stream(labels):
             input_tokens=int(labels["input_tokens"]),
             session_id=labels["session_id"],
             event_sequence=int(labels["event_sequence"]),
+            query_source=labels.get("query_source", ""),
         )
     return None
 

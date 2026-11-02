@@ -98,7 +98,13 @@ class ParseEventsTest(unittest.TestCase):
         by_seq = {e.event_sequence: e for e in events}
         self.assertEqual(by_seq[261], cm.Event(
             cache_read=95637, cache_creation=1458, input_tokens=2,
-            session_id="116076d4-cf41-45e7-83bc-086223d5666e", event_sequence=261))
+            session_id="116076d4-cf41-45e7-83bc-086223d5666e", event_sequence=261,
+            query_source="repl_main_thread"))
+
+    def test_parsed_event_carries_query_source(self):
+        events = cm.parse_events(load_fixture("loki_api_request.json"))
+        by_seq = {e.event_sequence: e for e in events}
+        self.assertEqual(by_seq[261].query_source, "repl_main_thread")
 
     def test_parses_compaction_fixture_into_compaction(self):
         items = cm.parse_events(load_fixture("loki_compaction.json"))
