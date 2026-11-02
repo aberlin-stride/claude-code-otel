@@ -127,11 +127,18 @@ class Backoff:
         self._base = base
         self._cap = cap
         self._delay = base
+        self._in_outage = False
 
     def failed(self):
+        self._in_outage = True
         delay = self._delay
         self._delay = min(self._delay * 2, self._cap)
         return delay
 
+    @property
+    def in_outage(self):
+        return self._in_outage
+
     def succeeded(self):
+        self._in_outage = False
         self._delay = self._base

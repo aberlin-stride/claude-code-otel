@@ -182,6 +182,14 @@ class BackoffTest(unittest.TestCase):
         backoff.succeeded()
         self.assertEqual(backoff.failed(), 5)
 
+    def test_in_outage_is_true_between_a_failure_and_the_next_success(self):
+        backoff = cm.Backoff(5, 60)
+        self.assertFalse(backoff.in_outage)
+        backoff.failed()
+        self.assertTrue(backoff.in_outage)
+        backoff.succeeded()
+        self.assertFalse(backoff.in_outage)
+
 
 if __name__ == "__main__":
     unittest.main()
