@@ -231,9 +231,13 @@ class Monitor:
             return self._backoff.failed()
         self._backoff.succeeded()
         self._since = started - OVERLAP_NS
+        misses = {}
         for event in self._exemptions.non_exempt(self._dedup.fresh(items)):
-            if is_significant(event) and self._cooldown.allow(event.session_id):
-                self._notify(*format_alert(event))
+            if is_significant(event):
+                misses.setdefault(event.session_id, []).append(event)
+        for session_id, events in misses.items():
+            if self._cooldown.allow(session_id):
+                self._notify(*format_group(events))
         return POLL_INTERVAL
 
 

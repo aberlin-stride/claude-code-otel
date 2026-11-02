@@ -21,12 +21,13 @@ def load_fixture(name):
         return json.load(f)
 
 
-def stream(session, seq, read, creation, input_tokens=2, event_name="api_request"):
+def stream(session, seq, read, creation, input_tokens=2, event_name="api_request",
+           source="repl_main_thread"):
     return {"stream": {
         "event_name": event_name, "session_id": session,
         "event_sequence": str(seq), "cache_read_tokens": str(read),
         "cache_creation_tokens": str(creation), "input_tokens": str(input_tokens),
-        "query_source": "repl_main_thread",
+        "query_source": source,
     }, "values": [[str(seq), "claude_code.api_request"]]}
 
 
@@ -458,6 +459,25 @@ class MonitorWiringTest(unittest.TestCase):
         self.clock.now += 60
         monitor.poll()
         self.assertEqual(len(self.notified), 1)
+
+    def test_poll_sends_one_grouped_notification_per_session(self):
+        session = "s" * 36
+        response = loki_response(
+            miss_stream(1),
+            *[stream(session, seq, 0, 30000, source="agent:x") for seq in (2, 3, 4)])
+        self.monitor(scripted_fetch(response)[0]).poll()
+        self.assertEqual(self.notified, [(
+            "Cache miss: 3 requests, worst 0% hit rate",
+            "agent:x ×3 · 90,006 prompt tokens · session ssssssss")])
+
+    # Guard added after the grouping code, never RED (grouping is per session).
+    def test_poll_sends_separate_notifications_for_different_sessions(self):
+        a, b = "a" * 36, "b" * 36
+        response = loki_response(
+            stream(a, 1, 0, 30000), stream(a, 2, 0, 30000),
+            stream(b, 3, 0, 30000), stream(b, 4, 0, 30000))
+        self.monitor(scripted_fetch(response)[0]).poll()
+        self.assertEqual(len(self.notified), 2)
 
     def test_a_healthy_request_does_not_start_the_cooldown(self):
         response = loki_response(
