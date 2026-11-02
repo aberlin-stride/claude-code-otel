@@ -65,6 +65,13 @@ def parse_events(loki_response):
     items = []
     for result in loki_response["data"]["result"]:
         labels = result["stream"]
+        if labels["event_name"] == "compaction":
+            items.append(Compaction(
+                session_id=labels["session_id"],
+                event_sequence=int(labels["event_sequence"]),
+                success=labels["success"] == "true",
+            ))
+            continue
         items.append(Event(
             cache_read=int(labels["cache_read_tokens"]),
             cache_creation=int(labels["cache_creation_tokens"]),

@@ -100,6 +100,12 @@ class ParseEventsTest(unittest.TestCase):
             cache_read=95637, cache_creation=1458, input_tokens=2,
             session_id="116076d4-cf41-45e7-83bc-086223d5666e", event_sequence=261))
 
+    def test_parses_compaction_fixture_into_compaction(self):
+        items = cm.parse_events(load_fixture("loki_compaction.json"))
+        self.assertEqual(items, [cm.Compaction(
+            session_id="4da3f278-2caa-4b96-a720-ae55585c03f3",
+            event_sequence=3115, success=True)])
+
 
 if __name__ == "__main__":
     unittest.main()
