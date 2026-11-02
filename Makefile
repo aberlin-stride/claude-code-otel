@@ -112,4 +112,4 @@ monitor: ## Start the cache-miss notification monitor in the background
 	fi
 
 stop-monitor: ## Stop the cache-miss notification monitor
-	@kill $$(cat $(MONITOR_PID)) && rm -f $(MONITOR_PID)
+	@if [ -f $(MONITOR_PID) ]; then kill $$(cat $(MONITOR_PID)); rm -f $(MONITOR_PID); fi

@@ -65,6 +65,9 @@ class MakeMonitorTest(unittest.TestCase):
         self.assertFalse(alive(pid))
         self.assertFalse(os.path.exists(self.pidfile))
 
+    def test_stop_monitor_without_a_pidfile_succeeds(self):
+        self.assertEqual(self.make("stop-monitor").returncode, 0)
+
 
 if __name__ == "__main__":
     unittest.main()
