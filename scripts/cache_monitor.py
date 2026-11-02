@@ -46,7 +46,7 @@ class ExemptionTracker:
 
     def non_exempt(self, items):
         result = []
-        for event in items:
+        for event in sorted(items, key=lambda item: item.event_sequence):
             if isinstance(event, Compaction):
                 if event.success:
                     self._post_compaction.add(event.session_id)

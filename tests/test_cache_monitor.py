@@ -71,6 +71,17 @@ class ExemptionTrackerTest(unittest.TestCase):
         compaction = cm.Compaction(session_id="s1", event_sequence=2, success=False)
         self.assertEqual(cm.ExemptionTracker().non_exempt([e1, compaction, e2]), [e2])
 
+    def test_events_are_evaluated_in_event_sequence_order(self):
+        earlier, later = miss("s1", 1), miss("s1", 2)
+        self.assertEqual(cm.ExemptionTracker().non_exempt([later, earlier]), [later])
+
+    # Guard added after the implementation (state is per instance), never RED.
+    def test_exemptions_carry_over_between_batches(self):
+        tracker = cm.ExemptionTracker()
+        first, second = miss("s1", 1), miss("s1", 2)
+        self.assertEqual(tracker.non_exempt([first]), [])
+        self.assertEqual(tracker.non_exempt([second]), [second])
+
 
 if __name__ == "__main__":
     unittest.main()
