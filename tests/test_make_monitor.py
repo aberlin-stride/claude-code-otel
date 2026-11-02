@@ -42,9 +42,9 @@ class MakeMonitorTest(unittest.TestCase):
                     pass
         self.tmp.cleanup()
 
-    def make(self, target):
+    def make(self, target, *extra):
         return subprocess.run(
-            ["make", target, "MONITOR_PID=" + self.pidfile, "MONITOR_LOG=" + self.logfile],
+            ["make", target, "MONITOR_PID=" + self.pidfile, "MONITOR_LOG=" + self.logfile, *extra],
             cwd=REPO, env=self.env, capture_output=True, text=True, timeout=30)
 
     def write_stale_pidfile(self):
@@ -131,6 +131,11 @@ class MakeMonitorTest(unittest.TestCase):
         time.sleep(0.2)
         # poll() reaps the child; os.kill(pid, 0) would still succeed on a zombie.
         self.assertIsNone(unrelated.poll())
+        self.assertFalse(os.path.exists(self.pidfile))
+
+    def test_monitor_reports_failure_and_leaves_no_pidfile_when_it_cannot_start(self):
+        result = self.make("monitor", "PYTHON=/nonexistent/python3")
+        self.assertNotEqual(result.returncode, 0)
         self.assertFalse(os.path.exists(self.pidfile))
 
 
