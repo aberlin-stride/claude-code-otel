@@ -106,3 +106,8 @@ class Cooldown:
             return False
         self._last_alert[session_id] = now
         return True
+
+
+class Dedup:
+    def fresh(self, items):
+        return items

@@ -148,5 +148,11 @@ class CooldownTest(unittest.TestCase):
         self.assertTrue(cooldown.allow("s2"))
 
 
+class DedupTest(unittest.TestCase):
+    def test_unseen_items_are_returned(self):
+        items = [miss("s1", 1), miss("s1", 2)]
+        self.assertEqual(cm.Dedup().fresh(items), items)
+
+
 if __name__ == "__main__":
     unittest.main()
