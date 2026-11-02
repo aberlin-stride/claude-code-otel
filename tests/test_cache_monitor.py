@@ -191,5 +191,14 @@ class BackoffTest(unittest.TestCase):
         self.assertFalse(backoff.in_outage)
 
 
+class NotifyTest(unittest.TestCase):
+    def test_notify_runs_osascript_with_title_and_message_verbatim(self):
+        calls = []
+        cm.notify('Cache "miss" \\ 42%', 'He said "hi" \\ and left', calls.append)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0][0], "osascript")
+        self.assertEqual(calls[0][-2:], ['He said "hi" \\ and left', 'Cache "miss" \\ 42%'])
+
+
 if __name__ == "__main__":
     unittest.main()

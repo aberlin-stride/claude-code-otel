@@ -1,4 +1,5 @@
 """Host-side monitor: alerts on macOS when a Claude Code turn misses the prompt cache."""
+import subprocess
 import time
 from dataclasses import dataclass
 
@@ -142,3 +143,21 @@ class Backoff:
     def succeeded(self):
         self._in_outage = False
         self._delay = self._base
+
+
+def _run_command(argv):
+    subprocess.run(argv, check=False, timeout=5)
+
+
+_APPLESCRIPT = (
+    "on run argv",
+    "display notification (item 1 of argv) with title (item 2 of argv)",
+    "end run",
+)
+
+
+def notify(title, message, runner=_run_command):
+    argv = ["osascript"]
+    for line in _APPLESCRIPT:
+        argv += ["-e", line]
+    runner(argv + [message, title])
