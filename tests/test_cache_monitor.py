@@ -1,3 +1,4 @@
+import http.client
 import json
 import os
 import socket
@@ -481,6 +482,11 @@ class MonitorWiringTest(unittest.TestCase):
         with FakeLoki(b"not json at all") as loki:
             monitor = cm.Monitor(cm.loki_fetch(loki.url), lambda t, m: None)
             self.assertEqual([monitor.poll(), monitor.poll()], [5, 10])
+
+    def test_poll_backs_off_when_loki_cuts_the_response_short(self):
+        fetch, _ = scripted_fetch(http.client.IncompleteRead(b"x"), http.client.IncompleteRead(b"x"))
+        monitor = self.monitor(fetch)
+        self.assertEqual([monitor.poll(), monitor.poll()], [5, 10])
 
     def test_query_asks_for_forward_order_and_a_limit_of_1000(self):
         with FakeLoki(loki_response()) as loki:

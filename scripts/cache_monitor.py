@@ -1,4 +1,5 @@
 """Host-side monitor: alerts on macOS when a Claude Code turn misses the prompt cache."""
+import http.client
 import json
 import logging
 import os
@@ -224,7 +225,7 @@ class Monitor:
         started = self._now_ns()
         try:
             response = self._fetch(self._since)
-        except (OSError, ValueError) as error:
+        except (OSError, ValueError, http.client.HTTPException) as error:
             if not self._backoff.in_outage:
                 logging.getLogger(__name__).warning("Loki unreachable, backing off: %s", error)
             return self._backoff.failed()
