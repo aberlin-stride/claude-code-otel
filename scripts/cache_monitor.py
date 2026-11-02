@@ -192,3 +192,26 @@ def loki_fetch(base_url):
         with urllib.request.urlopen(url, timeout=10) as response:
             return json.load(response)
     return fetch
+
+
+OVERLAP_NS = 60 * 10**9
+
+
+class Monitor:
+    def __init__(self, fetch, notify, now_ns=time.time_ns):
+        self._fetch = fetch
+        self._notify = notify
+        self._now_ns = now_ns
+        self._since = now_ns()
+        self._dedup = Dedup()
+        self._exemptions = ExemptionTracker()
+        self._cooldown = Cooldown()
+
+    def poll(self):
+        started = self._now_ns()
+        items = parse_events(self._fetch(self._since))
+        self._since = started - OVERLAP_NS
+        for event in self._exemptions.non_exempt(self._dedup.fresh(items)):
+            if is_significant(event) and self._cooldown.allow(event.session_id):
+                self._notify(*format_alert(event))
+        return 0

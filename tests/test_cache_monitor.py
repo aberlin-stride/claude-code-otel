@@ -18,6 +18,20 @@ def load_fixture(name):
         return json.load(f)
 
 
+def stream(session, seq, read, creation, input_tokens=2, event_name="api_request"):
+    return {"stream": {
+        "event_name": event_name, "session_id": session,
+        "event_sequence": str(seq), "cache_read_tokens": str(read),
+        "cache_creation_tokens": str(creation), "input_tokens": str(input_tokens),
+        "query_source": "repl_main_thread",
+    }, "values": [[str(seq), "claude_code.api_request"]]}
+
+
+def loki_response(*streams):
+    return {"status": "success",
+            "data": {"resultType": "streams", "result": list(streams)}}
+
+
 class FakeLoki:
     """Real HTTP server on an ephemeral port serving a fixed Loki response."""
 
@@ -271,6 +285,18 @@ class LokiFetchTest(unittest.TestCase):
         self.assertEqual(params["start"], ["1793634000000000000"])
         self.assertIn("api_request", params["query"][0])
         self.assertIn("compaction", params["query"][0])
+
+
+class MonitorTest(unittest.TestCase):
+    def test_poll_notifies_once_for_a_miss_after_the_exempt_first_event(self):
+        body = loki_response(stream("a" * 36, 1, 0, 30000), stream("a" * 36, 2, 0, 30000))
+        notified = []
+        with FakeLoki(body) as loki:
+            monitor = cm.Monitor(cm.loki_fetch(loki.url), lambda t, m: notified.append((t, m)))
+            monitor.poll()
+        self.assertEqual(notified, [(
+            "Cache miss: 0% hit rate",
+            "repl_main_thread · 30,002 prompt tokens · session aaaaaaaa")])
 
 
 if __name__ == "__main__":
