@@ -4,6 +4,7 @@ import logging
 import os
 import signal
 import sys
+import threading
 import subprocess
 import time
 import urllib.parse
@@ -239,12 +240,12 @@ def run(monitor, sleep=time.sleep, should_stop=lambda: False):
 def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     loki_url = os.environ.get("LOKI_URL", "http://localhost:3100")
-    stopping = []
+    stopping = threading.Event()
     for signum in (signal.SIGTERM, signal.SIGINT):
-        signal.signal(signum, lambda *_: stopping.append(True))
+        signal.signal(signum, lambda *_: stopping.set())
     logging.info("cache monitor watching %s", loki_url)
     monitor = Monitor(loki_fetch(loki_url), notify)
-    run(monitor, should_stop=lambda: bool(stopping))
+    run(monitor, stopping.wait, stopping.is_set)
     logging.info("cache monitor stopped")
 
 
