@@ -1,0 +1,43 @@
+{
+ "status": "success",
+ "data": {
+  "resultType": "streams",
+  "result": [
+   {
+    "stream": {
+     "detected_level": "unknown",
+     "duration_ms": "52191",
+     "environment": "development",
+     "event_name": "compaction",
+     "event_sequence": "3115",
+     "event_timestamp": "2026-10-29T23:22:24.253Z",
+     "flags": "1",
+     "host_arch": "arm64",
+     "observed_timestamp": "1793316144253000000",
+     "os_type": "darwin",
+     "os_version": "27.0.0",
+     "post_tokens": "40773",
+     "pre_tokens": "263107",
+     "precompute_reuse": "miss_not_ready",
+     "prompt_id": "7c946496-c3e4-492c-b512-e89f6faef32d",
+     "scope_name": "com.anthropic.claude_code.events",
+     "scope_version": "2.1.308",
+     "service_name": "claude-code",
+     "service_version": "2.1.308",
+     "session_id": "4da3f278-2caa-4b96-a720-ae55585c03f3",
+     "span_id": "83038ac6026603ec",
+     "success": "true",
+     "terminal_type": "iTerm.app",
+     "trace_id": "1dfaed89e7433f4d0644dbd04478e504",
+     "trigger": "manual"
+    },
+    "values": [
+     [
+      "1793316144253000000",
+      "claude_code.compaction"
+     ]
+    ]
+   }
+  ]
+ }
+}

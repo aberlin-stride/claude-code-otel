@@ -36,6 +36,9 @@ ENV/
 analysis_results/
 *.log
 
+# Cache-miss monitor state
+.cache-monitor.pid
+
 # Temporary files
 tmp/
 temp/ 

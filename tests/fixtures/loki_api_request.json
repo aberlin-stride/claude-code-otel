@@ -1,0 +1,278 @@
+{
+ "status": "success",
+ "data": {
+  "resultType": "streams",
+  "result": [
+   {
+    "stream": {
+     "cache_creation_1h_tokens": "1458",
+     "cache_creation_5m_tokens": "0",
+     "cache_creation_tokens": "1458",
+     "cache_read_tokens": "95637",
+     "client_request_id": "e3bbb4cb-ac0d-49ee-9abf-8dcd4a249de6",
+     "cost_usd": "0.0187397",
+     "cost_usd_micros": "18740",
+     "detected_level": "unknown",
+     "duration_ms": "2414",
+     "effort": "medium",
+     "environment": "development",
+     "event_name": "api_request",
+     "event_sequence": "261",
+     "event_timestamp": "2026-11-02T15:55:34.191Z",
+     "flags": "1",
+     "host_arch": "arm64",
+     "input_tokens": "2",
+     "model": "claude-sonnet-5-5",
+     "observed_timestamp": "1793634934191000000",
+     "os_type": "darwin",
+     "os_version": "27.0.0",
+     "output_tokens": "334",
+     "prompt_id": "afbf55bf-74de-4af3-adfa-bf93a863356d",
+     "query_source": "repl_main_thread",
+     "request_id": "req_011CgeNdbv9G2TJpjSGf2Y4U",
+     "scope_name": "com.anthropic.claude_code.events",
+     "scope_version": "2.1.308",
+     "service_name": "claude-code",
+     "service_version": "2.1.308",
+     "session_id": "116076d4-cf41-45e7-83bc-086223d5666e",
+     "span_id": "713eaa0455f24dc1",
+     "speed": "normal",
+     "terminal_type": "iTerm.app",
+     "trace_id": "f7e55fa98e412d84bdb90307eafeecad",
+     "ttft_ms": "443"
+    },
+    "values": [
+     [
+      "1793634934191000000",
+      "claude_code.api_request"
+     ]
+    ]
+   },
+   {
+    "stream": {
+     "cache_creation_1h_tokens": "291",
+     "cache_creation_5m_tokens": "0",
+     "cache_creation_tokens": "291",
+     "cache_read_tokens": "94792",
+     "client_request_id": "7616c779-b7a9-4787-ab66-aa4745a97a66",
+     "cost_usd": "0.012387200000000001",
+     "cost_usd_micros": "12387",
+     "detected_level": "unknown",
+     "duration_ms": "1615",
+     "effort": "medium",
+     "environment": "development",
+     "event_name": "api_request",
+     "event_sequence": "246",
+     "event_timestamp": "2026-11-02T15:55:09.930Z",
+     "flags": "1",
+     "host_arch": "arm64",
+     "input_tokens": "2",
+     "model": "claude-sonnet-5-5",
+     "observed_timestamp": "1793634909930000000",
+     "os_type": "darwin",
+     "os_version": "27.0.0",
+     "output_tokens": "174",
+     "prompt_id": "afbf55bf-74de-4af3-adfa-bf93a863356d",
+     "query_source": "repl_main_thread",
+     "request_id": "req_011CgeNbscA8K5qDRhWcYuGu",
+     "scope_name": "com.anthropic.claude_code.events",
+     "scope_version": "2.1.308",
+     "service_name": "claude-code",
+     "service_version": "2.1.308",
+     "session_id": "116076d4-cf41-45e7-83bc-086223d5666e",
+     "span_id": "713eaa0455f24dc1",
+     "speed": "normal",
+     "terminal_type": "iTerm.app",
+     "trace_id": "f7e55fa98e412d84bdb90307eafeecad",
+     "ttft_ms": "882"
+    },
+    "values": [
+     [
+      "1793634909930000000",
+      "claude_code.api_request"
+     ]
+    ]
+   },
+   {
+    "stream": {
+     "cache_creation_1h_tokens": "4665",
+     "cache_creation_5m_tokens": "0",
+     "cache_creation_tokens": "4665",
+     "cache_read_tokens": "84632",
+     "client_request_id": "548641ad-ad19-48e9-aa49-68ca7f5dfd1f",
+     "cost_usd": "0.0324872",
+     "cost_usd_micros": "32487",
+     "detected_level": "unknown",
+     "duration_ms": "3974",
+     "effort": "medium",
+     "environment": "development",
+     "event_name": "api_request",
+     "event_sequence": "219",
+     "event_timestamp": "2026-11-02T15:54:54.346Z",
+     "flags": "1",
+     "host_arch": "arm64",
+     "input_tokens": "2",
+     "model": "claude-sonnet-5-5",
+     "observed_timestamp": "1793634894346000000",
+     "os_type": "darwin",
+     "os_version": "27.0.0",
+     "output_tokens": "536",
+     "prompt_id": "afbf55bf-74de-4af3-adfa-bf93a863356d",
+     "query_source": "repl_main_thread",
+     "request_id": "req_011CgeNaYwTvcYhjyooEsoo8",
+     "scope_name": "com.anthropic.claude_code.events",
+     "scope_version": "2.1.308",
+     "service_name": "claude-code",
+     "service_version": "2.1.308",
+     "session_id": "116076d4-cf41-45e7-83bc-086223d5666e",
+     "span_id": "713eaa0455f24dc1",
+     "speed": "normal",
+     "terminal_type": "iTerm.app",
+     "trace_id": "f7e55fa98e412d84bdb90307eafeecad",
+     "ttft_ms": "651"
+    },
+    "values": [
+     [
+      "1793634894346000000",
+      "claude_code.api_request"
+     ]
+    ]
+   },
+   {
+    "stream": {
+     "cache_creation_1h_tokens": "4847",
+     "cache_creation_5m_tokens": "0",
+     "cache_creation_tokens": "4847",
+     "cache_read_tokens": "89297",
+     "client_request_id": "32139c8a-1ab5-49a9-9f91-4fe00296ae9d",
+     "cost_usd": "0.030531700000000002",
+     "cost_usd_micros": "30532",
+     "detected_level": "unknown",
+     "duration_ms": "2159",
+     "effort": "medium",
+     "environment": "development",
+     "event_name": "api_request",
+     "event_sequence": "232",
+     "event_timestamp": "2026-11-02T15:54:59.172Z",
+     "flags": "1",
+     "host_arch": "arm64",
+     "input_tokens": "2",
+     "model": "claude-sonnet-5-5",
+     "observed_timestamp": "1793634899172000000",
+     "os_type": "darwin",
+     "os_version": "27.0.0",
+     "output_tokens": "221",
+     "prompt_id": "afbf55bf-74de-4af3-adfa-bf93a863356d",
+     "query_source": "repl_main_thread",
+     "request_id": "req_011CgeNb3L1zqwVPWX7qjoZW",
+     "scope_name": "com.anthropic.claude_code.events",
+     "scope_version": "2.1.308",
+     "service_name": "claude-code",
+     "service_version": "2.1.308",
+     "session_id": "116076d4-cf41-45e7-83bc-086223d5666e",
+     "span_id": "713eaa0455f24dc1",
+     "speed": "normal",
+     "terminal_type": "iTerm.app",
+     "trace_id": "f7e55fa98e412d84bdb90307eafeecad",
+     "ttft_ms": "525"
+    },
+    "values": [
+     [
+      "1793634899172000000",
+      "claude_code.api_request"
+     ]
+    ]
+   },
+   {
+    "stream": {
+     "cache_creation_1h_tokens": "554",
+     "cache_creation_5m_tokens": "0",
+     "cache_creation_tokens": "554",
+     "cache_read_tokens": "95083",
+     "client_request_id": "cd5afa1f-810a-4a74-982b-bf1f004d53bf",
+     "cost_usd": "0.0201383",
+     "cost_usd_micros": "20138",
+     "detected_level": "unknown",
+     "duration_ms": "5468",
+     "effort": "medium",
+     "environment": "development",
+     "event_name": "api_request",
+     "event_sequence": "254",
+     "event_timestamp": "2026-11-02T15:55:16.919Z",
+     "flags": "1",
+     "host_arch": "arm64",
+     "input_tokens": "2",
+     "model": "claude-sonnet-5-5",
+     "observed_timestamp": "1793634916919000000",
+     "os_type": "darwin",
+     "os_version": "27.0.0",
+     "output_tokens": "841",
+     "prompt_id": "afbf55bf-74de-4af3-adfa-bf93a863356d",
+     "query_source": "repl_main_thread",
+     "request_id": "req_011CgeNc7AV9M6XNwtwGiEaT",
+     "scope_name": "com.anthropic.claude_code.events",
+     "scope_version": "2.1.308",
+     "service_name": "claude-code",
+     "service_version": "2.1.308",
+     "session_id": "116076d4-cf41-45e7-83bc-086223d5666e",
+     "span_id": "713eaa0455f24dc1",
+     "speed": "normal",
+     "terminal_type": "iTerm.app",
+     "trace_id": "f7e55fa98e412d84bdb90307eafeecad",
+     "ttft_ms": "615"
+    },
+    "values": [
+     [
+      "1793634916919000000",
+      "claude_code.api_request"
+     ]
+    ]
+   },
+   {
+    "stream": {
+     "cache_creation_1h_tokens": "648",
+     "cache_creation_5m_tokens": "0",
+     "cache_creation_tokens": "648",
+     "cache_read_tokens": "94144",
+     "client_request_id": "49738584-b72e-4ece-a47f-30337132ffdb",
+     "cost_usd": "0.013970400000000003",
+     "cost_usd_micros": "13970",
+     "detected_level": "unknown",
+     "duration_ms": "1802",
+     "effort": "medium",
+     "environment": "development",
+     "event_name": "api_request",
+     "event_sequence": "239",
+     "event_timestamp": "2026-11-02T15:55:02.590Z",
+     "flags": "1",
+     "host_arch": "arm64",
+     "input_tokens": "2",
+     "model": "claude-sonnet-5-5",
+     "observed_timestamp": "1793634902590000000",
+     "os_type": "darwin",
+     "os_version": "27.0.0",
+     "output_tokens": "196",
+     "prompt_id": "afbf55bf-74de-4af3-adfa-bf93a863356d",
+     "query_source": "repl_main_thread",
+     "request_id": "req_011CgeNbKTP7dPw2FgGE81d9",
+     "scope_name": "com.anthropic.claude_code.events",
+     "scope_version": "2.1.308",
+     "service_name": "claude-code",
+     "service_version": "2.1.308",
+     "session_id": "116076d4-cf41-45e7-83bc-086223d5666e",
+     "span_id": "713eaa0455f24dc1",
+     "speed": "normal",
+     "terminal_type": "iTerm.app",
+     "trace_id": "f7e55fa98e412d84bdb90307eafeecad",
+     "ttft_ms": "578"
+    },
+    "values": [
+     [
+      "1793634902590000000",
+      "claude_code.api_request"
+     ]
+    ]
+   }
+  ]
+ }
+}

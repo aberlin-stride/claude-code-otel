@@ -1,5 +1,9 @@
 # Claude Code Observability Stack
-.PHONY: help up down logs restart clean validate-config
+.PHONY: help up down logs restart clean validate-config monitor stop-monitor logs-monitor
+
+PYTHON ?= python3
+MONITOR_PID ?= .cache-monitor.pid
+MONITOR_LOG ?= .cache-monitor.log
 
 help: ## Show this help message
 	@echo "Claude Code Observability Stack"
@@ -18,10 +22,12 @@ up: ## Start the observability stack
 	@echo "📊 Grafana: http://localhost:3000 (admin/admin)"
 	@echo "🔍 Prometheus: http://localhost:9090"
 	@echo "📄 Loki: http://localhost:3100"
+	@$(MAKE) --no-print-directory monitor
 
 
 down: ## Stop the observability stack
 	@echo "🛑 Stopping Claude Code observability stack..."
+	@$(MAKE) --no-print-directory stop-monitor
 	docker compose down
 	@echo "✅ Stack stopped!"
 
@@ -99,3 +105,16 @@ demo-metrics: ## Generate demo metrics for testing
 	@echo "🎯 This would generate demo metrics if Claude Code was running"
 	@echo "💡 To see real metrics, ensure Claude Code is configured with telemetry enabled"
 	@echo "📖 Run 'make setup-claude' for setup instructions" 
+
+monitor: ## Start the cache-miss notification monitor in the background
+	@if [ -f $(MONITOR_PID) ] && kill -0 $$(cat $(MONITOR_PID)) 2>/dev/null; then \
+		echo "monitor already running (pid $$(cat $(MONITOR_PID)))"; \
+	else \
+		nohup $(PYTHON) scripts/cache_monitor.py >> $(MONITOR_LOG) 2>&1 & echo $$! > $(MONITOR_PID); \
+	fi
+
+stop-monitor: ## Stop the cache-miss notification monitor
+	@if [ -f $(MONITOR_PID) ]; then kill $$(cat $(MONITOR_PID)); rm -f $(MONITOR_PID); fi
+
+logs-monitor: ## Show logs from the cache-miss notification monitor
+	tail -f $(MONITOR_LOG)
