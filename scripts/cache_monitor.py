@@ -11,6 +11,15 @@ class Event:
     cache_read: int
     cache_creation: int
     input_tokens: int
+    session_id: str = ""
+    event_sequence: int = 0
+
+
+@dataclass(frozen=True)
+class Compaction:
+    session_id: str
+    event_sequence: int
+    success: bool
 
 
 def prompt_tokens(event):
@@ -28,3 +37,8 @@ def is_significant(event):
     if prompt_tokens(event) < MIN_PROMPT_TOKENS:
         return False
     return hit_rate(event) < HIT_RATE_THRESHOLD
+
+
+class ExemptionTracker:
+    def non_exempt(self, items):
+        return items[1:]

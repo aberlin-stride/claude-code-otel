@@ -47,5 +47,16 @@ class IsSignificantTest(unittest.TestCase):
         self.assertTrue(cm.is_significant(event))
 
 
+def miss(session, seq):
+    return cm.Event(cache_read=0, cache_creation=30000, input_tokens=0,
+                    session_id=session, event_sequence=seq)
+
+
+class ExemptionTrackerTest(unittest.TestCase):
+    def test_first_event_of_a_session_is_exempt_and_second_is_not(self):
+        first, second = miss("s1", 1), miss("s1", 2)
+        self.assertEqual(cm.ExemptionTracker().non_exempt([first, second]), [second])
+
+
 if __name__ == "__main__":
     unittest.main()
