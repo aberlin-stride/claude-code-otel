@@ -2,6 +2,9 @@
 from dataclasses import dataclass
 
 
+HIT_RATE_THRESHOLD = 0.8
+
+
 @dataclass(frozen=True)
 class Event:
     cache_read: int
@@ -21,4 +24,4 @@ def hit_rate(event):
 
 
 def is_significant(event):
-    return True
+    return hit_rate(event) < HIT_RATE_THRESHOLD

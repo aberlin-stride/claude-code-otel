@@ -27,6 +27,11 @@ class IsSignificantTest(unittest.TestCase):
         event = cm.Event(cache_read=20000, cache_creation=20000, input_tokens=0)
         self.assertTrue(cm.is_significant(event))
 
+    def test_high_hit_rate_event_is_not_significant(self):
+        # 90% hit rate on 100k prompt tokens.
+        event = cm.Event(cache_read=90000, cache_creation=10000, input_tokens=0)
+        self.assertFalse(cm.is_significant(event))
+
 
 if __name__ == "__main__":
     unittest.main()
