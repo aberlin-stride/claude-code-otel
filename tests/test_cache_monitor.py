@@ -106,6 +106,14 @@ class ParseEventsTest(unittest.TestCase):
             session_id="4da3f278-2caa-4b96-a720-ae55585c03f3",
             event_sequence=3115, success=True)])
 
+    def test_malformed_streams_are_skipped_without_losing_the_rest(self):
+        response = load_fixture("loki_api_request.json")
+        streams = [r["stream"] for r in response["data"]["result"]]
+        del streams[0]["cache_read_tokens"]
+        streams[1]["input_tokens"] = "not-a-number"
+        streams[2]["event_name"] = "tool_result"
+        self.assertEqual(len(cm.parse_events(response)), 3)
+
 
 if __name__ == "__main__":
     unittest.main()

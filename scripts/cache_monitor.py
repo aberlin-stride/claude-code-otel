@@ -61,22 +61,32 @@ class ExemptionTracker:
         return result
 
 
-def parse_events(loki_response):
-    items = []
-    for result in loki_response["data"]["result"]:
-        labels = result["stream"]
-        if labels["event_name"] == "compaction":
-            items.append(Compaction(
-                session_id=labels["session_id"],
-                event_sequence=int(labels["event_sequence"]),
-                success=labels["success"] == "true",
-            ))
-            continue
-        items.append(Event(
+def _parse_stream(labels):
+    name = labels["event_name"]
+    if name == "compaction":
+        return Compaction(
+            session_id=labels["session_id"],
+            event_sequence=int(labels["event_sequence"]),
+            success=labels["success"] == "true",
+        )
+    if name == "api_request":
+        return Event(
             cache_read=int(labels["cache_read_tokens"]),
             cache_creation=int(labels["cache_creation_tokens"]),
             input_tokens=int(labels["input_tokens"]),
             session_id=labels["session_id"],
             event_sequence=int(labels["event_sequence"]),
-        ))
+        )
+    return None
+
+
+def parse_events(loki_response):
+    items = []
+    for result in loki_response["data"]["result"]:
+        try:
+            item = _parse_stream(result["stream"])
+        except (KeyError, ValueError):
+            continue
+        if item is not None:
+            items.append(item)
     return items
