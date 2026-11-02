@@ -116,7 +116,7 @@ monitor: ## Start the cache-miss notification monitor in the background
 	fi
 
 stop-monitor: ## Stop the cache-miss notification monitor
-	@if [ -f $(MONITOR_PID) ]; then kill $$(cat $(MONITOR_PID)); rm -f $(MONITOR_PID); fi
+	@if $(MONITOR_RUNNING); then kill $$(cat $(MONITOR_PID)); fi; rm -f $(MONITOR_PID)
 
 logs-monitor: ## Show logs from the cache-miss notification monitor
 	tail -f $(MONITOR_LOG)

@@ -125,6 +125,14 @@ class MakeMonitorTest(unittest.TestCase):
         self.assertNotEqual(self.read_pid(), unrelated.pid)
         self.assertTrue(alive(self.read_pid()))
 
+    def test_stop_monitor_never_kills_an_unrelated_process(self):
+        unrelated = self.write_pidfile_naming_an_unrelated_process()
+        self.make("stop-monitor")
+        time.sleep(0.2)
+        # poll() reaps the child; os.kill(pid, 0) would still succeed on a zombie.
+        self.assertIsNone(unrelated.poll())
+        self.assertFalse(os.path.exists(self.pidfile))
+
 
 if __name__ == "__main__":
     unittest.main()
