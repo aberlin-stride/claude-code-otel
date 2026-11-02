@@ -242,6 +242,8 @@ def _percent(event):
 
 
 def format_group(events):
+    if len(events) == 1:
+        return format_alert(events[0])
     counts = {}
     for event in events:
         counts[event.query_source] = counts.get(event.query_source, 0) + 1

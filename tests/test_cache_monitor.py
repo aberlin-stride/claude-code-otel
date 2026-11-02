@@ -528,6 +528,15 @@ class FormatGroupTest(unittest.TestCase):
             "agent:builtin:general-purpose ×2 · repl_main_thread ×1"
             " · 90,002 prompt tokens · session 116076d4"))
 
+    def test_format_group_of_one_event_matches_the_single_alert_format(self):
+        event = cm.Event(
+            cache_read=10000, cache_creation=30000, input_tokens=2,
+            session_id="116076d4-cf41-45e7-83bc-086223d5666e",
+            event_sequence=7, query_source="repl_main_thread")
+        self.assertEqual(cm.format_group([event]), (
+            "Cache miss: 24% hit rate",
+            "repl_main_thread · 40,002 prompt tokens · session 116076d4"))
+
 
 if __name__ == "__main__":
     unittest.main()
