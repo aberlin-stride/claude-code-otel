@@ -53,6 +53,13 @@ class MakeMonitorTest(unittest.TestCase):
         with open(self.pidfile, "w") as f:
             f.write(str(finished.pid))
 
+    def write_pidfile_naming_an_unrelated_process(self):
+        unrelated = subprocess.Popen(["sleep", "300"])
+        self.addCleanup(unrelated.kill)
+        with open(self.pidfile, "w") as f:
+            f.write(str(unrelated.pid))
+        return unrelated
+
     def read_pid(self):
         with open(self.pidfile) as f:
             return int(f.read())
@@ -111,6 +118,12 @@ class MakeMonitorTest(unittest.TestCase):
             time.sleep(0.05)
         self.assertFalse(alive(pid))
         self.assertFalse(os.path.exists(self.pidfile))
+
+    def test_monitor_ignores_a_pidfile_naming_an_unrelated_live_process(self):
+        unrelated = self.write_pidfile_naming_an_unrelated_process()
+        self.make("monitor")
+        self.assertNotEqual(self.read_pid(), unrelated.pid)
+        self.assertTrue(alive(self.read_pid()))
 
 
 if __name__ == "__main__":

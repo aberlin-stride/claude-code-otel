@@ -4,6 +4,8 @@
 PYTHON ?= python3
 MONITOR_PID ?= .cache-monitor.pid
 MONITOR_LOG ?= .cache-monitor.log
+# True when the pidfile names a live cache_monitor.py (a reused PID does not count).
+MONITOR_RUNNING = [ -f $(MONITOR_PID) ] && ps -p $$(cat $(MONITOR_PID)) -o command= 2>/dev/null | grep -q cache_monitor.py
 
 help: ## Show this help message
 	@echo "Claude Code Observability Stack"
@@ -107,7 +109,7 @@ demo-metrics: ## Generate demo metrics for testing
 	@echo "📖 Run 'make setup-claude' for setup instructions" 
 
 monitor: ## Start the cache-miss notification monitor in the background
-	@if [ -f $(MONITOR_PID) ] && kill -0 $$(cat $(MONITOR_PID)) 2>/dev/null; then \
+	@if $(MONITOR_RUNNING); then \
 		echo "monitor already running (pid $$(cat $(MONITOR_PID)))"; \
 	else \
 		nohup $(PYTHON) scripts/cache_monitor.py >> $(MONITOR_LOG) 2>&1 & echo $$! > $(MONITOR_PID); \
