@@ -32,6 +32,11 @@ class IsSignificantTest(unittest.TestCase):
         event = cm.Event(cache_read=90000, cache_creation=10000, input_tokens=0)
         self.assertFalse(cm.is_significant(event))
 
+    def test_event_below_minimum_prompt_size_is_not_significant(self):
+        # 50% hit rate but only 10k prompt tokens: too small to matter.
+        event = cm.Event(cache_read=5000, cache_creation=5000, input_tokens=0)
+        self.assertFalse(cm.is_significant(event))
+
 
 if __name__ == "__main__":
     unittest.main()

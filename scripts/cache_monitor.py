@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 
 HIT_RATE_THRESHOLD = 0.8
+MIN_PROMPT_TOKENS = 20000
 
 
 @dataclass(frozen=True)
@@ -24,4 +25,6 @@ def hit_rate(event):
 
 
 def is_significant(event):
+    if prompt_tokens(event) < MIN_PROMPT_TOKENS:
+        return False
     return hit_rate(event) < HIT_RATE_THRESHOLD
