@@ -153,6 +153,19 @@ class DedupTest(unittest.TestCase):
         items = [miss("s1", 1), miss("s1", 2)]
         self.assertEqual(cm.Dedup().fresh(items), items)
 
+    def test_items_seen_in_an_earlier_poll_are_dropped(self):
+        dedup = cm.Dedup()
+        first, second = miss("s1", 1), miss("s1", 2)
+        dedup.fresh([first])
+        self.assertEqual(dedup.fresh([first, second]), [second])
+
+    # Guard added after the implementation (same key for both types), never RED.
+    def test_a_repeated_compaction_is_dropped(self):
+        dedup = cm.Dedup()
+        compaction = cm.Compaction(session_id="s1", event_sequence=5, success=True)
+        self.assertEqual(dedup.fresh([compaction]), [compaction])
+        self.assertEqual(dedup.fresh([compaction]), [])
+
 
 if __name__ == "__main__":
     unittest.main()

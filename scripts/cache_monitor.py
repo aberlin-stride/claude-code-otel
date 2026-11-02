@@ -109,5 +109,14 @@ class Cooldown:
 
 
 class Dedup:
+    def __init__(self):
+        self._seen = set()
+
     def fresh(self, items):
-        return items
+        result = []
+        for item in items:
+            key = (item.session_id, item.event_sequence)
+            if key not in self._seen:
+                self._seen.add(key)
+                result.append(item)
+        return result
