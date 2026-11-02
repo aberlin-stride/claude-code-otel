@@ -114,7 +114,7 @@ monitor: ## Start the cache-miss notification monitor in the background
 	else \
 		nohup $(PYTHON) scripts/cache_monitor.py >> $(MONITOR_LOG) 2>&1 & echo $$! > $(MONITOR_PID); \
 		sleep 1; \
-		if ! $(MONITOR_RUNNING); then \
+		if ! ( $(MONITOR_RUNNING) ); then \
 			echo "monitor failed to start; last log lines:"; tail -n 5 $(MONITOR_LOG); \
 			rm -f $(MONITOR_PID); exit 1; \
 		fi; \
