@@ -22,6 +22,7 @@ up: ## Start the observability stack
 	@echo "📊 Grafana: http://localhost:3000 (admin/admin)"
 	@echo "🔍 Prometheus: http://localhost:9090"
 	@echo "📄 Loki: http://localhost:3100"
+	@$(MAKE) --no-print-directory monitor
 
 
 down: ## Stop the observability stack

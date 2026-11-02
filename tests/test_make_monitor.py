@@ -23,6 +23,14 @@ class MakeMonitorTest(unittest.TestCase):
         self.logfile = os.path.join(self.tmp.name, "monitor.log")
         # Port 1 refuses connections: the monitor runs but never touches real Loki.
         self.env = dict(os.environ, LOKI_URL="http://127.0.0.1:1")
+        # Fake docker (external infrastructure) so up/down never touch the real stack.
+        shim_dir = os.path.join(self.tmp.name, "bin")
+        os.mkdir(shim_dir)
+        shim = os.path.join(shim_dir, "docker")
+        with open(shim, "w") as f:
+            f.write("#!/bin/sh\nexit 0\n")
+        os.chmod(shim, 0o755)
+        self.env["PATH"] = shim_dir + os.pathsep + self.env["PATH"]
         self.addCleanup(self.cleanup)
 
     def cleanup(self):
@@ -87,6 +95,11 @@ class MakeMonitorTest(unittest.TestCase):
         stale = self.read_pid()
         self.make("monitor")
         self.assertNotEqual(self.read_pid(), stale)
+        self.assertTrue(alive(self.read_pid()))
+
+    def test_up_starts_the_monitor(self):
+        self.make("up")
+        self.assertTrue(os.path.exists(self.pidfile))
         self.assertTrue(alive(self.read_pid()))
 
 
