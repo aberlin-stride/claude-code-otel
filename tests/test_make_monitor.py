@@ -138,6 +138,9 @@ class MakeMonitorTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertFalse(os.path.exists(self.pidfile))
 
+    def test_up_succeeds_even_when_the_monitor_cannot_start(self):
+        self.assertEqual(self.make("up", "PYTHON=/nonexistent/python3").returncode, 0)
+
 
 if __name__ == "__main__":
     unittest.main()
