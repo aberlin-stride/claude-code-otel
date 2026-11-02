@@ -167,3 +167,10 @@ def notify(title, message, runner=_run_command):
         runner(argv + [message, title])
     except (OSError, subprocess.SubprocessError) as error:
         logging.getLogger(__name__).warning("notification failed: %s", error)
+
+
+def format_alert(event):
+    title = f"Cache miss: {hit_rate(event):.0%} hit rate"
+    message = (f"{event.query_source} · {prompt_tokens(event):,} prompt tokens"
+               f" · session {event.session_id[:8]}")
+    return (title, message)

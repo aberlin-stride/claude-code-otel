@@ -212,5 +212,16 @@ class NotifyTest(unittest.TestCase):
         cm.notify("title", "message", broken_runner)
 
 
+class FormatAlertTest(unittest.TestCase):
+    def test_format_alert_summarizes_hit_rate_size_source_and_session(self):
+        event = cm.Event(
+            cache_read=10000, cache_creation=30000, input_tokens=2,
+            session_id="116076d4-cf41-45e7-83bc-086223d5666e",
+            event_sequence=7, query_source="repl_main_thread")
+        self.assertEqual(cm.format_alert(event), (
+            "Cache miss: 25% hit rate",
+            "repl_main_thread · 40,002 prompt tokens · session 116076d4"))
+
+
 if __name__ == "__main__":
     unittest.main()
