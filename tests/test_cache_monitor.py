@@ -127,6 +127,13 @@ class CooldownTest(unittest.TestCase):
     def test_first_alert_for_a_session_is_allowed(self):
         self.assertTrue(cm.Cooldown(300, FakeClock()).allow("s1"))
 
+    def test_second_alert_inside_the_window_is_suppressed(self):
+        clock = FakeClock()
+        cooldown = cm.Cooldown(300, clock)
+        self.assertTrue(cooldown.allow("s1"))
+        clock.now += 60
+        self.assertFalse(cooldown.allow("s1"))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -97,6 +97,10 @@ class Cooldown:
     def __init__(self, window_seconds=300, clock=time.monotonic):
         self._window = window_seconds
         self._clock = clock
+        self._last_alert = {}
 
     def allow(self, session_id):
+        if session_id in self._last_alert:
+            return False
+        self._last_alert[session_id] = self._clock()
         return True
