@@ -195,6 +195,7 @@ def loki_fetch(base_url):
 
 
 OVERLAP_NS = 60 * 10**9
+POLL_INTERVAL = 5
 
 
 class Monitor:
@@ -214,9 +215,10 @@ class Monitor:
             response = self._fetch(self._since)
         except (OSError, ValueError):
             return self._backoff.failed()
+        self._backoff.succeeded()
         items = parse_events(response)
         self._since = started - OVERLAP_NS
         for event in self._exemptions.non_exempt(self._dedup.fresh(items)):
             if is_significant(event) and self._cooldown.allow(event.session_id):
                 self._notify(*format_alert(event))
-        return 0
+        return POLL_INTERVAL

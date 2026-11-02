@@ -43,7 +43,7 @@ def closed_port_url():
 class FakeLoki:
     """Real HTTP server on an ephemeral port serving a fixed Loki response."""
 
-    def __init__(self, body):
+    def __init__(self, body, port=0):
         self.body = body
         self.requests = []
         owner = self
@@ -61,7 +61,7 @@ class FakeLoki:
             def log_message(self, *args):
                 pass
 
-        self._server = HTTPServer(("127.0.0.1", 0), Handler)
+        self._server = HTTPServer(("127.0.0.1", port), Handler)
         self.url = "http://127.0.0.1:%d" % self._server.server_port
         threading.Thread(target=self._server.serve_forever, daemon=True).start()
 
@@ -325,6 +325,15 @@ class MonitorTest(unittest.TestCase):
 
     def test_poll_survives_loki_being_down_and_returns_the_first_backoff_delay(self):
         monitor = cm.Monitor(cm.loki_fetch(closed_port_url()), lambda t, m: None)
+        self.assertEqual(monitor.poll(), 5)
+
+    def test_poll_recovers_after_an_outage_and_resets_the_backoff(self):
+        url = closed_port_url()
+        port = int(url.rsplit(":", 1)[1])
+        monitor = cm.Monitor(cm.loki_fetch(url), lambda t, m: None)
+        self.assertEqual([monitor.poll(), monitor.poll()], [5, 10])
+        with FakeLoki(loki_response(), port):
+            self.assertEqual(monitor.poll(), 5)
         self.assertEqual(monitor.poll(), 5)
 
 
