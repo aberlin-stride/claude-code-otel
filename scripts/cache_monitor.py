@@ -62,6 +62,9 @@ class ExemptionTracker:
                 if event.success:
                     self._post_compaction.add(event.session_id)
                 continue
+            if event.query_source != MAIN_THREAD:
+                result.append(event)
+                continue
             if event.session_id in self._post_compaction:
                 self._post_compaction.discard(event.session_id)
                 continue
@@ -200,6 +203,7 @@ def loki_fetch(base_url):
 
 OVERLAP_NS = 60 * 10**9
 POLL_INTERVAL = 5
+MAIN_THREAD = "repl_main_thread"
 # Live Loki rejects a start within ~10ms of its own "now" with HTTP 400.
 FIRST_POLL_MARGIN_NS = 5 * 10**9
 

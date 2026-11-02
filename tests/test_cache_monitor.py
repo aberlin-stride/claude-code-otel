@@ -119,9 +119,9 @@ class IsSignificantTest(unittest.TestCase):
         self.assertTrue(cm.is_significant(event))
 
 
-def miss(session, seq):
+def miss(session, seq, source="repl_main_thread"):
     return cm.Event(cache_read=0, cache_creation=30000, input_tokens=0,
-                    session_id=session, event_sequence=seq)
+                    session_id=session, event_sequence=seq, query_source=source)
 
 
 class ExemptionTrackerTest(unittest.TestCase):
@@ -146,6 +146,19 @@ class ExemptionTrackerTest(unittest.TestCase):
     def test_events_are_evaluated_in_event_sequence_order(self):
         earlier, later = miss("s1", 1), miss("s1", 2)
         self.assertEqual(cm.ExemptionTracker().non_exempt([later, earlier]), [later])
+
+    def test_non_main_thread_request_does_not_spend_the_first_request_exemption(self):
+        title = miss("s1", 1, "generate_session_title")
+        main = miss("s1", 2)
+        self.assertEqual(cm.ExemptionTracker().non_exempt([title, main]), [title])
+
+    # Guard added after the implementation (same branch as the test above), never RED.
+    def test_non_main_thread_request_does_not_spend_the_post_compaction_exemption(self):
+        first, away = miss("s1", 1), miss("s1", 3, "away_summary")
+        after = miss("s1", 4)
+        compaction = cm.Compaction(session_id="s1", event_sequence=2, success=True)
+        self.assertEqual(
+            cm.ExemptionTracker().non_exempt([first, compaction, away, after]), [away])
 
     # Guard added after the implementation (state is per instance), never RED.
     def test_exemptions_carry_over_between_batches(self):
