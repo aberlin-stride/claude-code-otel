@@ -67,8 +67,8 @@ make open
 `make up` also starts a small background monitor that shows a macOS notification when a Claude Code turn misses the prompt cache, so you notice when you are misusing it.
 
 - **What alerts:** a single API request whose cache hit rate (`cacheRead / (cacheRead + cacheCreation + input)`) is below 80% and whose prompt size is at least 20,000 tokens.
-- **What does not alert:** the first request of a session, and the first request after a successful `/compact` (both are expected misses). A cache that expired during an idle gap does alert.
-- **Noise control:** at most one notification per session every 5 minutes. Main-thread and subagent requests both count, and the notification names the `query_source`.
+- **What does not alert:** the first main-thread request of a session, and the first main-thread request after a successful `/compact` (both are expected misses). Helper requests such as the session title do not use up these exemptions. A cache that expired during an idle gap does alert.
+- **Grouping and noise control:** misses from the same session found in one poll are sent as one notification (count, worst hit rate, which `query_source`s, total tokens). At most one notification per session every 5 minutes. Subagent requests count, and their cold starts are the usual reason for a grouped notification.
 - **How it works:** `scripts/cache_monitor.py` polls Loki every 5 seconds for `api_request` and `compaction` events. If Loki is down it logs once and retries with a growing delay (5s up to 60s) until Loki is back. It needs Python 3 (standard library only) and runs on the host, not in Docker, because `osascript` is a macOS tool.
 
 ```bash
@@ -79,7 +79,9 @@ make stop-monitor   # stop it (make down does this too)
 
 Set `LOKI_URL` to point at a Loki other than `http://localhost:3100`. If no notification appears, check System Settings > Notifications for the terminal app that runs `make`.
 
-Limitations: a session already running when the monitor starts has its next request treated as the first of the session. Notifications are not clickable and do not link to the trace.
+`make monitor` waits a second and exits non-zero (showing the last log lines) if the process did not start. `make up` still succeeds in that case. `make monitor` and `make stop-monitor` only act on a pidfile whose process command line contains `cache_monitor.py`.
+
+Limitations: a session already running when the monitor starts has its next main-thread request treated as the first of the session. If Loki was down long enough to hold more than 1000 new events, the oldest 1000 are read and the rest are skipped (it logs nothing). The monitor keeps its seen-event and per-session state in memory without pruning. `make down` followed by `make up` within about 10 seconds can briefly leave two monitors running. Notifications are not clickable and do not link to the trace.
 
 
 ## Claude Code Observability Stack

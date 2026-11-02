@@ -79,7 +79,7 @@ status: ## Show stack status
 	@echo "🌐 Service URLs:"
 	@echo "  Grafana:      http://localhost:3000"
 	@echo "  Prometheus:   http://localhost:9090"
-	@echo "  Loki:         internal only (otel-network), query via Grafana"
+	@echo "  Loki:         http://localhost:3100 (localhost only; also queryable via Grafana)"
 	@echo "  Tempo:        internal only (otel-network), query via Grafana"
 
 	@echo "  Collector:    http://localhost:4317 (gRPC), http://localhost:4318 (HTTP)"
