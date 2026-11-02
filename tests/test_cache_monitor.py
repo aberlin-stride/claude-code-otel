@@ -344,5 +344,13 @@ class MonitorTest(unittest.TestCase):
         self.assertEqual(len(logs.records), 1)
 
 
+class RunTest(unittest.TestCase):
+    def test_run_sleeps_for_each_delay_poll_returns(self):
+        monitor = cm.Monitor(cm.loki_fetch(closed_port_url()), lambda t, m: None)
+        sleeps = []
+        cm.run(monitor, sleeps.append, lambda: len(sleeps) >= 3)
+        self.assertEqual(sleeps, [5, 10, 20])
+
+
 if __name__ == "__main__":
     unittest.main()

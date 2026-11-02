@@ -224,3 +224,8 @@ class Monitor:
             if is_significant(event) and self._cooldown.allow(event.session_id):
                 self._notify(*format_alert(event))
         return POLL_INTERVAL
+
+
+def run(monitor, sleep=time.sleep, should_stop=lambda: False):
+    while not should_stop():
+        sleep(monitor.poll())
