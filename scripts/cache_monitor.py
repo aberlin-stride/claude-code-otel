@@ -1,7 +1,10 @@
 """Host-side monitor: alerts on macOS when a Claude Code turn misses the prompt cache."""
+import json
 import logging
 import subprocess
 import time
+import urllib.parse
+import urllib.request
 from dataclasses import dataclass
 
 
@@ -174,3 +177,18 @@ def format_alert(event):
     message = (f"{event.query_source} · {prompt_tokens(event):,} prompt tokens"
                f" · session {event.session_id[:8]}")
     return (title, message)
+
+
+LOKI_QUERY = '{service_name="claude-code"} | event_name=~"api_request|compaction"'
+
+
+def loki_fetch(base_url):
+    def fetch(start_ns):
+        params = urllib.parse.urlencode({
+            "query": LOKI_QUERY, "start": start_ns,
+            "limit": 1000, "direction": "forward",
+        })
+        url = f"{base_url}/loki/api/v1/query_range?{params}"
+        with urllib.request.urlopen(url, timeout=10) as response:
+            return json.load(response)
+    return fetch
