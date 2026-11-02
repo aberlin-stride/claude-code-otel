@@ -102,6 +102,16 @@ class MakeMonitorTest(unittest.TestCase):
         self.assertTrue(os.path.exists(self.pidfile))
         self.assertTrue(alive(self.read_pid()))
 
+    def test_down_stops_the_monitor(self):
+        self.make("up")
+        pid = self.read_pid()
+        self.make("down")
+        deadline = time.time() + 2
+        while alive(pid) and time.time() < deadline:
+            time.sleep(0.05)
+        self.assertFalse(alive(pid))
+        self.assertFalse(os.path.exists(self.pidfile))
+
 
 if __name__ == "__main__":
     unittest.main()

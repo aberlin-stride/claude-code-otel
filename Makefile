@@ -27,6 +27,7 @@ up: ## Start the observability stack
 
 down: ## Stop the observability stack
 	@echo "🛑 Stopping Claude Code observability stack..."
+	@$(MAKE) --no-print-directory stop-monitor
 	docker compose down
 	@echo "✅ Stack stopped!"
 
