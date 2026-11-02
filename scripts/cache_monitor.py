@@ -9,5 +9,12 @@ class Event:
     input_tokens: int
 
 
+def prompt_tokens(event):
+    return event.cache_read + event.cache_creation + event.input_tokens
+
+
 def hit_rate(event):
-    return None
+    total = prompt_tokens(event)
+    if total == 0:
+        return None
+    return event.cache_read / total
