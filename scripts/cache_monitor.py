@@ -48,7 +48,8 @@ class ExemptionTracker:
         result = []
         for event in items:
             if isinstance(event, Compaction):
-                self._post_compaction.add(event.session_id)
+                if event.success:
+                    self._post_compaction.add(event.session_id)
                 continue
             if event.session_id in self._post_compaction:
                 self._post_compaction.discard(event.session_id)
