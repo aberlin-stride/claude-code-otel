@@ -336,6 +336,13 @@ class MonitorTest(unittest.TestCase):
             self.assertEqual(monitor.poll(), 5)
         self.assertEqual(monitor.poll(), 5)
 
+    def test_an_outage_is_logged_once_not_on_every_retry(self):
+        monitor = cm.Monitor(cm.loki_fetch(closed_port_url()), lambda t, m: None)
+        with self.assertLogs("cache_monitor", "WARNING") as logs:
+            for _ in range(3):
+                monitor.poll()
+        self.assertEqual(len(logs.records), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
