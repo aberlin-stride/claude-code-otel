@@ -206,10 +206,15 @@ class Monitor:
         self._dedup = Dedup()
         self._exemptions = ExemptionTracker()
         self._cooldown = Cooldown()
+        self._backoff = Backoff()
 
     def poll(self):
         started = self._now_ns()
-        items = parse_events(self._fetch(self._since))
+        try:
+            response = self._fetch(self._since)
+        except (OSError, ValueError):
+            return self._backoff.failed()
+        items = parse_events(response)
         self._since = started - OVERLAP_NS
         for event in self._exemptions.non_exempt(self._dedup.fresh(items)):
             if is_significant(event) and self._cooldown.allow(event.session_id):

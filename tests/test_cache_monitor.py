@@ -1,5 +1,6 @@
 import json
 import os
+import socket
 import sys
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -30,6 +31,13 @@ def stream(session, seq, read, creation, input_tokens=2, event_name="api_request
 def loki_response(*streams):
     return {"status": "success",
             "data": {"resultType": "streams", "result": list(streams)}}
+
+
+def closed_port_url():
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+    return "http://127.0.0.1:%d" % port
 
 
 class FakeLoki:
@@ -314,6 +322,10 @@ class MonitorTest(unittest.TestCase):
             monitor.poll()
             monitor.poll()
         self.assertEqual(len(notified), 1)
+
+    def test_poll_survives_loki_being_down_and_returns_the_first_backoff_delay(self):
+        monitor = cm.Monitor(cm.loki_fetch(closed_port_url()), lambda t, m: None)
+        self.assertEqual(monitor.poll(), 5)
 
 
 if __name__ == "__main__":
