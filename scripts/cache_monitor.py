@@ -180,7 +180,8 @@ def notify(title, message, runner=_run_command):
 
 
 def format_alert(event):
-    title = f"Cache miss: {hit_rate(event):.0%} hit rate"
+    # Integer floor: a 79.6% miss must not display as "80%".
+    title = f"Cache miss: {100 * event.cache_read // prompt_tokens(event)}% hit rate"
     message = (f"{event.query_source} · {prompt_tokens(event):,} prompt tokens"
                f" · session {event.session_id[:8]}")
     return (title, message)

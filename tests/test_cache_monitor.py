@@ -296,7 +296,7 @@ class FormatAlertTest(unittest.TestCase):
             session_id="116076d4-cf41-45e7-83bc-086223d5666e",
             event_sequence=7, query_source="repl_main_thread")
         self.assertEqual(cm.format_alert(event), (
-            "Cache miss: 25% hit rate",
+            "Cache miss: 24% hit rate",
             "repl_main_thread · 40,002 prompt tokens · session 116076d4"))
 
 
@@ -378,6 +378,11 @@ class RunTest(unittest.TestCase):
         self.assertEqual(notified, [(
             "Cache miss: 0% hit rate",
             "repl_main_thread · 30,002 prompt tokens · session dddddddd")])
+
+    def test_alert_title_never_rounds_a_miss_up_to_the_threshold(self):
+        event = cm.Event(cache_read=79600, cache_creation=20400, input_tokens=0,
+                         session_id="s" * 36, query_source="repl_main_thread")
+        self.assertEqual(cm.format_alert(event)[0], "Cache miss: 79% hit rate")
 
 
 if __name__ == "__main__":
