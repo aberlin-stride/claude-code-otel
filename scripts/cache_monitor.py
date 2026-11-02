@@ -126,6 +126,9 @@ class Backoff:
     def __init__(self, base=5, cap=60):
         self._base = base
         self._cap = cap
+        self._delay = base
 
     def failed(self):
-        return 5
+        delay = self._delay
+        self._delay = min(self._delay * 2, self._cap)
+        return delay

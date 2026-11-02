@@ -171,6 +171,10 @@ class BackoffTest(unittest.TestCase):
     def test_first_failure_retries_after_the_base_delay(self):
         self.assertEqual(cm.Backoff(5, 60).failed(), 5)
 
+    def test_repeated_failures_double_up_to_the_cap(self):
+        backoff = cm.Backoff(5, 60)
+        self.assertEqual([backoff.failed() for _ in range(6)], [5, 10, 20, 40, 60, 60])
+
 
 if __name__ == "__main__":
     unittest.main()
