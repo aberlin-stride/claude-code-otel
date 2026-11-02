@@ -1,5 +1,9 @@
 # Claude Code Observability Stack
-.PHONY: help up down logs restart clean validate-config
+.PHONY: help up down logs restart clean validate-config monitor stop-monitor logs-monitor
+
+PYTHON ?= python3
+MONITOR_PID ?= .cache-monitor.pid
+MONITOR_LOG ?= .cache-monitor.log
 
 help: ## Show this help message
 	@echo "Claude Code Observability Stack"
@@ -99,3 +103,9 @@ demo-metrics: ## Generate demo metrics for testing
 	@echo "🎯 This would generate demo metrics if Claude Code was running"
 	@echo "💡 To see real metrics, ensure Claude Code is configured with telemetry enabled"
 	@echo "📖 Run 'make setup-claude' for setup instructions" 
+
+monitor: ## Start the cache-miss notification monitor in the background
+	@nohup $(PYTHON) scripts/cache_monitor.py >> $(MONITOR_LOG) 2>&1 & echo $$! > $(MONITOR_PID)
+
+stop-monitor: ## Stop the cache-miss notification monitor
+	@true
