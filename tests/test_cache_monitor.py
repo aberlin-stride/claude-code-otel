@@ -199,6 +199,12 @@ class NotifyTest(unittest.TestCase):
         self.assertEqual(calls[0][0], "osascript")
         self.assertEqual(calls[0][-2:], ['He said "hi" \\ and left', 'Cache "miss" \\ 42%'])
 
+    def test_notify_swallows_runner_failures(self):
+        def broken_runner(argv):
+            raise OSError("osascript missing")
+
+        cm.notify("title", "message", broken_runner)
+
 
 if __name__ == "__main__":
     unittest.main()

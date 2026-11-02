@@ -1,4 +1,5 @@
 """Host-side monitor: alerts on macOS when a Claude Code turn misses the prompt cache."""
+import logging
 import subprocess
 import time
 from dataclasses import dataclass
@@ -160,4 +161,7 @@ def notify(title, message, runner=_run_command):
     argv = ["osascript"]
     for line in _APPLESCRIPT:
         argv += ["-e", line]
-    runner(argv + [message, title])
+    try:
+        runner(argv + [message, title])
+    except (OSError, subprocess.SubprocessError) as error:
+        logging.getLogger(__name__).warning("notification failed: %s", error)
