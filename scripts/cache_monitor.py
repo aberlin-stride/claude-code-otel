@@ -18,3 +18,7 @@ def hit_rate(event):
     if total == 0:
         return None
     return event.cache_read / total
+
+
+def is_significant(event):
+    return True

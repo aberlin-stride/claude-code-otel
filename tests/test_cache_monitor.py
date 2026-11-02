@@ -21,5 +21,12 @@ class HitRateTest(unittest.TestCase):
         self.assertAlmostEqual(rate, 0.9704643883195403, places=6)
 
 
+class IsSignificantTest(unittest.TestCase):
+    def test_large_low_hit_rate_event_is_significant(self):
+        # 50% hit rate on 40k prompt tokens.
+        event = cm.Event(cache_read=20000, cache_creation=20000, input_tokens=0)
+        self.assertTrue(cm.is_significant(event))
+
+
 if __name__ == "__main__":
     unittest.main()
