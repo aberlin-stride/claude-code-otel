@@ -100,7 +100,9 @@ class Cooldown:
         self._last_alert = {}
 
     def allow(self, session_id):
-        if session_id in self._last_alert:
+        now = self._clock()
+        last = self._last_alert.get(session_id)
+        if last is not None and now - last < self._window:
             return False
-        self._last_alert[session_id] = self._clock()
+        self._last_alert[session_id] = now
         return True

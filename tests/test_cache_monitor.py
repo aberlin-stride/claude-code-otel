@@ -134,6 +134,19 @@ class CooldownTest(unittest.TestCase):
         clock.now += 60
         self.assertFalse(cooldown.allow("s1"))
 
+    def test_alert_is_allowed_again_after_the_window_passes(self):
+        clock = FakeClock()
+        cooldown = cm.Cooldown(300, clock)
+        self.assertTrue(cooldown.allow("s1"))
+        clock.now += 301
+        self.assertTrue(cooldown.allow("s1"))
+
+    # Guard added after the implementation (state is keyed by session), never RED.
+    def test_cooldown_is_independent_per_session(self):
+        cooldown = cm.Cooldown(300, FakeClock())
+        self.assertTrue(cooldown.allow("s1"))
+        self.assertTrue(cooldown.allow("s2"))
+
 
 if __name__ == "__main__":
     unittest.main()
