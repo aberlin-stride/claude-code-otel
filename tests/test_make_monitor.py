@@ -55,6 +55,16 @@ class MakeMonitorTest(unittest.TestCase):
         self.assertEqual(self.read_pid(), first)
         self.assertTrue(alive(first))
 
+    def test_stop_monitor_stops_the_process_and_removes_the_pidfile(self):
+        self.make("monitor")
+        pid = self.read_pid()
+        self.make("stop-monitor")
+        deadline = time.time() + 2
+        while alive(pid) and time.time() < deadline:
+            time.sleep(0.05)
+        self.assertFalse(alive(pid))
+        self.assertFalse(os.path.exists(self.pidfile))
+
 
 if __name__ == "__main__":
     unittest.main()
