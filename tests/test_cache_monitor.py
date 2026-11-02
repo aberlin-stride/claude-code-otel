@@ -167,5 +167,10 @@ class DedupTest(unittest.TestCase):
         self.assertEqual(dedup.fresh([compaction]), [])
 
 
+class BackoffTest(unittest.TestCase):
+    def test_first_failure_retries_after_the_base_delay(self):
+        self.assertEqual(cm.Backoff(5, 60).failed(), 5)
+
+
 if __name__ == "__main__":
     unittest.main()

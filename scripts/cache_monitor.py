@@ -120,3 +120,12 @@ class Dedup:
                 self._seen.add(key)
                 result.append(item)
         return result
+
+
+class Backoff:
+    def __init__(self, base=5, cap=60):
+        self._base = base
+        self._cap = cap
+
+    def failed(self):
+        return 5
