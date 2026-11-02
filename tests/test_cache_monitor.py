@@ -37,6 +37,15 @@ class IsSignificantTest(unittest.TestCase):
         event = cm.Event(cache_read=5000, cache_creation=5000, input_tokens=0)
         self.assertFalse(cm.is_significant(event))
 
+    # Boundary guards: added after the implementation, so they were never RED.
+    def test_exactly_80_percent_hit_rate_is_not_significant(self):
+        event = cm.Event(cache_read=16000, cache_creation=4000, input_tokens=0)
+        self.assertFalse(cm.is_significant(event))
+
+    def test_exactly_20k_prompt_tokens_is_significant(self):
+        event = cm.Event(cache_read=10000, cache_creation=10000, input_tokens=0)
+        self.assertTrue(cm.is_significant(event))
+
 
 if __name__ == "__main__":
     unittest.main()
