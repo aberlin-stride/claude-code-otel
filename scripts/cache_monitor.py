@@ -1,6 +1,9 @@
 """Host-side monitor: alerts on macOS when a Claude Code turn misses the prompt cache."""
 import json
 import logging
+import os
+import signal
+import sys
 import subprocess
 import time
 import urllib.parse
@@ -196,6 +199,8 @@ def loki_fetch(base_url):
 
 OVERLAP_NS = 60 * 10**9
 POLL_INTERVAL = 5
+# Live Loki rejects a start within ~10ms of its own "now" with HTTP 400.
+FIRST_POLL_MARGIN_NS = 5 * 10**9
 
 
 class Monitor:
@@ -203,7 +208,7 @@ class Monitor:
         self._fetch = fetch
         self._notify = notify
         self._now_ns = now_ns
-        self._since = now_ns()
+        self._since = now_ns() - FIRST_POLL_MARGIN_NS
         self._dedup = Dedup()
         self._exemptions = ExemptionTracker()
         self._cooldown = Cooldown()
@@ -229,3 +234,19 @@ class Monitor:
 def run(monitor, sleep=time.sleep, should_stop=lambda: False):
     while not should_stop():
         sleep(monitor.poll())
+
+
+def main():
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    loki_url = os.environ.get("LOKI_URL", "http://localhost:3100")
+    stopping = []
+    for signum in (signal.SIGTERM, signal.SIGINT):
+        signal.signal(signum, lambda *_: stopping.append(True))
+    logging.info("cache monitor watching %s", loki_url)
+    monitor = Monitor(loki_fetch(loki_url), notify)
+    run(monitor, should_stop=lambda: bool(stopping))
+    logging.info("cache monitor stopped")
+
+
+if __name__ == "__main__":
+    sys.exit(main())

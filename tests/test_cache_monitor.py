@@ -3,6 +3,7 @@ import os
 import socket
 import sys
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 import unittest
@@ -43,16 +44,21 @@ def closed_port_url():
 class FakeLoki:
     """Real HTTP server on an ephemeral port serving a fixed Loki response."""
 
-    def __init__(self, body, port=0):
+    def __init__(self, body, port=0, strict=True):
         self.body = body
         self.requests = []
         owner = self
 
         class Handler(BaseHTTPRequestHandler):
             def do_GET(self):
-                owner.requests.append(urlparse(self.path))
+                request = urlparse(self.path)
+                owner.requests.append(request)
+                # Live Loki answers 400 when start is within ~10ms of its own
+                # "now" (measured: 10ms -> 400, 100ms -> 200).
+                start = int(parse_qs(request.query)["start"][0])
+                too_recent = start > time.time_ns() - 50 * 10**6
                 payload = json.dumps(owner.body).encode()
-                self.send_response(200)
+                self.send_response(400 if strict and too_recent else 200)
                 self.send_header("Content-Type", "application/json")
                 self.send_header("Content-Length", str(len(payload)))
                 self.end_headers()
@@ -350,6 +356,15 @@ class RunTest(unittest.TestCase):
         sleeps = []
         cm.run(monitor, sleeps.append, lambda: len(sleeps) >= 3)
         self.assertEqual(sleeps, [5, 10, 20])
+
+    def test_first_poll_does_not_start_inside_lokis_rejection_window(self):
+        body = loki_response(stream("d" * 36, 1, 0, 30000), stream("d" * 36, 2, 0, 30000))
+        notified = []
+        with FakeLoki(body) as loki:
+            cm.Monitor(cm.loki_fetch(loki.url), lambda t, m: notified.append((t, m))).poll()
+        self.assertEqual(notified, [(
+            "Cache miss: 0% hit rate",
+            "repl_main_thread · 30,002 prompt tokens · session dddddddd")])
 
 
 if __name__ == "__main__":
