@@ -115,5 +115,18 @@ class ParseEventsTest(unittest.TestCase):
         self.assertEqual(len(cm.parse_events(response)), 3)
 
 
+class FakeClock:
+    def __init__(self):
+        self.now = 1000.0
+
+    def __call__(self):
+        return self.now
+
+
+class CooldownTest(unittest.TestCase):
+    def test_first_alert_for_a_session_is_allowed(self):
+        self.assertTrue(cm.Cooldown(300, FakeClock()).allow("s1"))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,4 +1,5 @@
 """Host-side monitor: alerts on macOS when a Claude Code turn misses the prompt cache."""
+import time
 from dataclasses import dataclass
 
 
@@ -90,3 +91,12 @@ def parse_events(loki_response):
         if item is not None:
             items.append(item)
     return items
+
+
+class Cooldown:
+    def __init__(self, window_seconds=300, clock=time.monotonic):
+        self._window = window_seconds
+        self._clock = clock
+
+    def allow(self, session_id):
+        return True
