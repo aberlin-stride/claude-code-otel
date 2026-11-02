@@ -298,6 +298,23 @@ class MonitorTest(unittest.TestCase):
             "Cache miss: 0% hit rate",
             "repl_main_thread · 30,002 prompt tokens · session aaaaaaaa")])
 
+    # Guards added after the pipeline existed, so never RED.
+    def test_healthy_cache_hits_do_not_notify(self):
+        body = loki_response(stream("b" * 36, 1, 0, 30000), stream("b" * 36, 2, 90000, 1000))
+        notified = []
+        with FakeLoki(body) as loki:
+            cm.Monitor(cm.loki_fetch(loki.url), lambda t, m: notified.append(t)).poll()
+        self.assertEqual(notified, [])
+
+    def test_polling_the_same_events_twice_notifies_once(self):
+        body = loki_response(stream("c" * 36, 1, 0, 30000), stream("c" * 36, 2, 0, 30000))
+        notified = []
+        with FakeLoki(body) as loki:
+            monitor = cm.Monitor(cm.loki_fetch(loki.url), lambda t, m: notified.append(t))
+            monitor.poll()
+            monitor.poll()
+        self.assertEqual(len(notified), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
