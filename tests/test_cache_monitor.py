@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import unittest
@@ -5,6 +6,13 @@ import unittest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 
 import cache_monitor as cm
+
+FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures")
+
+
+def load_fixture(name):
+    with open(os.path.join(FIXTURES, name)) as f:
+        return json.load(f)
 
 
 class HitRateTest(unittest.TestCase):
@@ -81,6 +89,16 @@ class ExemptionTrackerTest(unittest.TestCase):
         first, second = miss("s1", 1), miss("s1", 2)
         self.assertEqual(tracker.non_exempt([first]), [])
         self.assertEqual(tracker.non_exempt([second]), [second])
+
+
+class ParseEventsTest(unittest.TestCase):
+    def test_parses_api_request_fixture_into_events(self):
+        events = cm.parse_events(load_fixture("loki_api_request.json"))
+        self.assertEqual(len(events), 6)
+        by_seq = {e.event_sequence: e for e in events}
+        self.assertEqual(by_seq[261], cm.Event(
+            cache_read=95637, cache_creation=1458, input_tokens=2,
+            session_id="116076d4-cf41-45e7-83bc-086223d5666e", event_sequence=261))
 
 
 if __name__ == "__main__":

@@ -59,3 +59,17 @@ class ExemptionTracker:
                 continue
             result.append(event)
         return result
+
+
+def parse_events(loki_response):
+    items = []
+    for result in loki_response["data"]["result"]:
+        labels = result["stream"]
+        items.append(Event(
+            cache_read=int(labels["cache_read_tokens"]),
+            cache_creation=int(labels["cache_creation_tokens"]),
+            input_tokens=int(labels["input_tokens"]),
+            session_id=labels["session_id"],
+            event_sequence=int(labels["event_sequence"]),
+        ))
+    return items
