@@ -1,3 +1,4 @@
+import http.client
 import json
 import os
 import socket
@@ -20,12 +21,13 @@ def load_fixture(name):
         return json.load(f)
 
 
-def stream(session, seq, read, creation, input_tokens=2, event_name="api_request"):
+def stream(session, seq, read, creation, input_tokens=2, event_name="api_request",
+           source="repl_main_thread"):
     return {"stream": {
         "event_name": event_name, "session_id": session,
         "event_sequence": str(seq), "cache_read_tokens": str(read),
         "cache_creation_tokens": str(creation), "input_tokens": str(input_tokens),
-        "query_source": "repl_main_thread",
+        "query_source": source,
     }, "values": [[str(seq), "claude_code.api_request"]]}
 
 
@@ -57,7 +59,8 @@ class FakeLoki:
                 # "now" (measured: 10ms -> 400, 100ms -> 200).
                 start = int(parse_qs(request.query)["start"][0])
                 too_recent = start > time.time_ns() - 50 * 10**6
-                payload = json.dumps(owner.body).encode()
+                payload = (owner.body if isinstance(owner.body, bytes)
+                           else json.dumps(owner.body).encode())
                 self.send_response(400 if strict and too_recent else 200)
                 self.send_header("Content-Type", "application/json")
                 self.send_header("Content-Length", str(len(payload)))
@@ -119,9 +122,9 @@ class IsSignificantTest(unittest.TestCase):
         self.assertTrue(cm.is_significant(event))
 
 
-def miss(session, seq):
+def miss(session, seq, source="repl_main_thread"):
     return cm.Event(cache_read=0, cache_creation=30000, input_tokens=0,
-                    session_id=session, event_sequence=seq)
+                    session_id=session, event_sequence=seq, query_source=source)
 
 
 class ExemptionTrackerTest(unittest.TestCase):
@@ -146,6 +149,19 @@ class ExemptionTrackerTest(unittest.TestCase):
     def test_events_are_evaluated_in_event_sequence_order(self):
         earlier, later = miss("s1", 1), miss("s1", 2)
         self.assertEqual(cm.ExemptionTracker().non_exempt([later, earlier]), [later])
+
+    def test_non_main_thread_request_does_not_spend_the_first_request_exemption(self):
+        title = miss("s1", 1, "generate_session_title")
+        main = miss("s1", 2)
+        self.assertEqual(cm.ExemptionTracker().non_exempt([title, main]), [title])
+
+    # Guard added after the implementation (same branch as the test above), never RED.
+    def test_non_main_thread_request_does_not_spend_the_post_compaction_exemption(self):
+        first, away = miss("s1", 1), miss("s1", 3, "away_summary")
+        after = miss("s1", 4)
+        compaction = cm.Compaction(session_id="s1", event_sequence=2, success=True)
+        self.assertEqual(
+            cm.ExemptionTracker().non_exempt([first, compaction, away, after]), [away])
 
     # Guard added after the implementation (state is per instance), never RED.
     def test_exemptions_carry_over_between_batches(self):
@@ -283,7 +299,7 @@ class FormatAlertTest(unittest.TestCase):
             session_id="116076d4-cf41-45e7-83bc-086223d5666e",
             event_sequence=7, query_source="repl_main_thread")
         self.assertEqual(cm.format_alert(event), (
-            "Cache miss: 25% hit rate",
+            "Cache miss: 24% hit rate",
             "repl_main_thread · 40,002 prompt tokens · session 116076d4"))
 
 
@@ -365,6 +381,181 @@ class RunTest(unittest.TestCase):
         self.assertEqual(notified, [(
             "Cache miss: 0% hit rate",
             "repl_main_thread · 30,002 prompt tokens · session dddddddd")])
+
+    def test_alert_title_never_rounds_a_miss_up_to_the_threshold(self):
+        event = cm.Event(cache_read=79600, cache_creation=20400, input_tokens=0,
+                         session_id="s" * 36, query_source="repl_main_thread")
+        self.assertEqual(cm.format_alert(event)[0], "Cache miss: 79% hit rate")
+
+
+def scripted_fetch(*responses):
+    """Fake fetch boundary: returns each response in turn (or raises it) and records start."""
+    starts = []
+    queue = list(responses)
+
+    def fetch(start_ns):
+        starts.append(start_ns)
+        item = queue.pop(0)
+        if isinstance(item, Exception):
+            raise item
+        return item
+
+    return fetch, starts
+
+
+def miss_stream(seq, session="s" * 36):
+    return stream(session, seq, 0, 30000)
+
+
+class MonitorWiringTest(unittest.TestCase):
+    # These cover behavior that already worked; each was verified by mutation
+    # (see CHANGELOG), not by a RED run.
+    def setUp(self):
+        self.notified = []
+        self.clock = FakeClock()
+        self.cooldown = cm.Cooldown(300, self.clock)
+
+    def monitor(self, fetch, **kwargs):
+        return cm.Monitor(fetch, lambda t, m: self.notified.append((t, m)),
+                          cooldown=self.cooldown, **kwargs)
+
+    def test_dedup_alone_prevents_a_repeat_alert_after_the_cooldown_expires(self):
+        response = loki_response(miss_stream(1), miss_stream(2))
+        monitor = self.monitor(scripted_fetch(response, response)[0])
+        monitor.poll()
+        self.clock.now += 400
+        monitor.poll()
+        self.assertEqual(len(self.notified), 1)
+
+    def test_first_request_exemption_persists_across_polls(self):
+        fetch, _ = scripted_fetch(
+            loki_response(miss_stream(1)),
+            loki_response(miss_stream(1), miss_stream(2)))
+        monitor = self.monitor(fetch)
+        monitor.poll()
+        self.assertEqual(self.notified, [])
+        monitor.poll()
+        self.assertEqual(len(self.notified), 1)
+
+    def test_compaction_exemption_applies_to_a_request_in_a_later_poll(self):
+        compaction = stream("s" * 36, 2, 0, 0, event_name="compaction")
+        compaction["stream"]["success"] = "true"
+        first = loki_response(miss_stream(1), compaction)
+        second = loki_response(miss_stream(1), compaction, miss_stream(3))
+        third = loki_response(miss_stream(1), compaction, miss_stream(3), miss_stream(4))
+        monitor = self.monitor(scripted_fetch(first, second, third)[0])
+        for _ in range(3):
+            monitor.poll()
+            self.clock.now += 400
+        # seq 3 is exempt (first after the compaction); only seq 4 alerts.
+        self.assertEqual(len(self.notified), 1)
+
+    def test_cooldown_suppresses_a_new_miss_in_a_later_poll(self):
+        fetch, _ = scripted_fetch(
+            loki_response(miss_stream(1), miss_stream(2)),
+            loki_response(miss_stream(1), miss_stream(2), miss_stream(3)))
+        monitor = self.monitor(fetch)
+        monitor.poll()
+        self.clock.now += 60
+        monitor.poll()
+        self.assertEqual(len(self.notified), 1)
+
+    def test_poll_sends_one_grouped_notification_per_session(self):
+        session = "s" * 36
+        response = loki_response(
+            miss_stream(1),
+            *[stream(session, seq, 0, 30000, source="agent:x") for seq in (2, 3, 4)])
+        self.monitor(scripted_fetch(response)[0]).poll()
+        self.assertEqual(self.notified, [(
+            "Cache miss: 3 requests, worst 0% hit rate",
+            "agent:x ×3 · 90,006 prompt tokens · session ssssssss")])
+
+    # Guard added after the grouping code, never RED (grouping is per session).
+    def test_poll_sends_separate_notifications_for_different_sessions(self):
+        a, b = "a" * 36, "b" * 36
+        response = loki_response(
+            stream(a, 1, 0, 30000), stream(a, 2, 0, 30000),
+            stream(b, 3, 0, 30000), stream(b, 4, 0, 30000))
+        self.monitor(scripted_fetch(response)[0]).poll()
+        self.assertEqual(len(self.notified), 2)
+
+    def test_a_healthy_request_does_not_start_the_cooldown(self):
+        response = loki_response(
+            miss_stream(1), stream("s" * 36, 2, 90000, 1000), miss_stream(3))
+        self.monitor(scripted_fetch(response)[0]).poll()
+        self.assertEqual(len(self.notified), 1)
+
+    def test_poll_start_uses_launch_margin_then_overlap_and_holds_during_an_outage(self):
+        launch, first, second, third = 1000 * 10**9, 1100 * 10**9, 1200 * 10**9, 1300 * 10**9
+        times = iter([launch, first, second, third])
+        fetch, starts = scripted_fetch(
+            loki_response(), ConnectionRefusedError(), loki_response())
+        monitor = self.monitor(fetch, now_ns=lambda: next(times))
+        for _ in range(3):
+            monitor.poll()
+        self.assertEqual(starts, [
+            launch - 5 * 10**9,    # first poll: launch margin
+            first - 60 * 10**9,    # after success: 60s overlap
+            first - 60 * 10**9])   # after a failed poll: unchanged
+
+    def test_a_non_json_200_response_backs_off_instead_of_crashing(self):
+        with FakeLoki(b"not json at all") as loki:
+            monitor = cm.Monitor(cm.loki_fetch(loki.url), lambda t, m: None)
+            self.assertEqual([monitor.poll(), monitor.poll()], [5, 10])
+
+    def test_poll_backs_off_when_loki_cuts_the_response_short(self):
+        fetch, _ = scripted_fetch(http.client.IncompleteRead(b"x"), http.client.IncompleteRead(b"x"))
+        monitor = self.monitor(fetch)
+        self.assertEqual([monitor.poll(), monitor.poll()], [5, 10])
+
+    def test_poll_backs_off_when_the_response_has_an_unexpected_shape(self):
+        fetch, _ = scripted_fetch({}, {"status": "error"})
+        monitor = self.monitor(fetch)
+        self.assertEqual([monitor.poll(), monitor.poll()], [5, 10])
+
+    def test_query_asks_for_forward_order_and_a_limit_of_1000(self):
+        with FakeLoki(loki_response()) as loki:
+            cm.loki_fetch(loki.url)(1793634000000000000)
+        params = parse_qs(loki.requests[0].query)
+        self.assertEqual(params["limit"], ["1000"])
+        self.assertEqual(params["direction"], ["forward"])
+
+    def test_cooldown_allows_an_alert_at_exactly_the_window_boundary(self):
+        clock = FakeClock()
+        cooldown = cm.Cooldown(300, clock)
+        self.assertTrue(cooldown.allow("s1"))
+        clock.now += 300
+        self.assertTrue(cooldown.allow("s1"))
+
+    def test_dedup_keys_per_session_so_equal_sequence_numbers_both_pass(self):
+        a, b = miss("s1", 5), miss("s2", 5)
+        self.assertEqual(cm.Dedup().fresh([a, b]), [a, b])
+
+
+class FormatGroupTest(unittest.TestCase):
+    def test_format_group_summarizes_count_worst_rate_sources_and_tokens(self):
+        session = "116076d4-cf41-45e7-83bc-086223d5666e"
+        agent = "agent:builtin:general-purpose"
+
+        def event(read, creation, input_tokens, source):
+            return cm.Event(cache_read=read, cache_creation=creation, input_tokens=input_tokens,
+                            session_id=session, query_source=source)
+
+        events = [event(0, 30000, 2, agent), event(15000, 15000, 0, agent),
+                  event(18000, 12000, 0, "repl_main_thread")]
+        self.assertEqual(cm.format_group(events), (
+            "Cache miss: 3 requests, worst 0% hit rate",
+            "agent:builtin:general-purpose ×2 · repl_main_thread ×1"
+            " · 90,002 prompt tokens · session 116076d4"))
+
+    def test_format_group_of_one_event_matches_the_single_alert_format(self):
+        event = cm.Event(
+            cache_read=10000, cache_creation=30000, input_tokens=2,
+            session_id="116076d4-cf41-45e7-83bc-086223d5666e",
+            event_sequence=7, query_source="repl_main_thread")
+        self.assertEqual(cm.format_group([event]), (
+            "Cache miss: 24% hit rate",
+            "repl_main_thread · 40,002 prompt tokens · session 116076d4"))
 
 
 if __name__ == "__main__":

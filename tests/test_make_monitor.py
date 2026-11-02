@@ -42,9 +42,9 @@ class MakeMonitorTest(unittest.TestCase):
                     pass
         self.tmp.cleanup()
 
-    def make(self, target):
+    def make(self, target, *extra):
         return subprocess.run(
-            ["make", target, "MONITOR_PID=" + self.pidfile, "MONITOR_LOG=" + self.logfile],
+            ["make", target, "MONITOR_PID=" + self.pidfile, "MONITOR_LOG=" + self.logfile, *extra],
             cwd=REPO, env=self.env, capture_output=True, text=True, timeout=30)
 
     def write_stale_pidfile(self):
@@ -52,6 +52,13 @@ class MakeMonitorTest(unittest.TestCase):
         finished.wait()
         with open(self.pidfile, "w") as f:
             f.write(str(finished.pid))
+
+    def write_pidfile_naming_an_unrelated_process(self):
+        unrelated = subprocess.Popen(["sleep", "300"])
+        self.addCleanup(unrelated.kill)
+        with open(self.pidfile, "w") as f:
+            f.write(str(unrelated.pid))
+        return unrelated
 
     def read_pid(self):
         with open(self.pidfile) as f:
@@ -111,6 +118,28 @@ class MakeMonitorTest(unittest.TestCase):
             time.sleep(0.05)
         self.assertFalse(alive(pid))
         self.assertFalse(os.path.exists(self.pidfile))
+
+    def test_monitor_ignores_a_pidfile_naming_an_unrelated_live_process(self):
+        unrelated = self.write_pidfile_naming_an_unrelated_process()
+        self.make("monitor")
+        self.assertNotEqual(self.read_pid(), unrelated.pid)
+        self.assertTrue(alive(self.read_pid()))
+
+    def test_stop_monitor_never_kills_an_unrelated_process(self):
+        unrelated = self.write_pidfile_naming_an_unrelated_process()
+        self.make("stop-monitor")
+        time.sleep(0.2)
+        # poll() reaps the child; os.kill(pid, 0) would still succeed on a zombie.
+        self.assertIsNone(unrelated.poll())
+        self.assertFalse(os.path.exists(self.pidfile))
+
+    def test_monitor_reports_failure_and_leaves_no_pidfile_when_it_cannot_start(self):
+        result = self.make("monitor", "PYTHON=/nonexistent/python3")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(os.path.exists(self.pidfile))
+
+    def test_up_succeeds_even_when_the_monitor_cannot_start(self):
+        self.assertEqual(self.make("up", "PYTHON=/nonexistent/python3").returncode, 0)
 
 
 if __name__ == "__main__":

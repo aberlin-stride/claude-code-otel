@@ -4,6 +4,8 @@
 PYTHON ?= python3
 MONITOR_PID ?= .cache-monitor.pid
 MONITOR_LOG ?= .cache-monitor.log
+# True when the pidfile names a live cache_monitor.py (a reused PID does not count).
+MONITOR_RUNNING = [ -f $(MONITOR_PID) ] && ps -p $$(cat $(MONITOR_PID)) -o command= 2>/dev/null | grep -q cache_monitor.py
 
 help: ## Show this help message
 	@echo "Claude Code Observability Stack"
@@ -22,7 +24,7 @@ up: ## Start the observability stack
 	@echo "📊 Grafana: http://localhost:3000 (admin/admin)"
 	@echo "🔍 Prometheus: http://localhost:9090"
 	@echo "📄 Loki: http://localhost:3100"
-	@$(MAKE) --no-print-directory monitor
+	-@$(MAKE) --no-print-directory monitor
 
 
 down: ## Stop the observability stack
@@ -77,7 +79,7 @@ status: ## Show stack status
 	@echo "🌐 Service URLs:"
 	@echo "  Grafana:      http://localhost:3000"
 	@echo "  Prometheus:   http://localhost:9090"
-	@echo "  Loki:         internal only (otel-network), query via Grafana"
+	@echo "  Loki:         http://localhost:3100 (localhost only; also queryable via Grafana)"
 	@echo "  Tempo:        internal only (otel-network), query via Grafana"
 
 	@echo "  Collector:    http://localhost:4317 (gRPC), http://localhost:4318 (HTTP)"
@@ -107,14 +109,19 @@ demo-metrics: ## Generate demo metrics for testing
 	@echo "📖 Run 'make setup-claude' for setup instructions" 
 
 monitor: ## Start the cache-miss notification monitor in the background
-	@if [ -f $(MONITOR_PID) ] && kill -0 $$(cat $(MONITOR_PID)) 2>/dev/null; then \
+	@if $(MONITOR_RUNNING); then \
 		echo "monitor already running (pid $$(cat $(MONITOR_PID)))"; \
 	else \
 		nohup $(PYTHON) scripts/cache_monitor.py >> $(MONITOR_LOG) 2>&1 & echo $$! > $(MONITOR_PID); \
+		sleep 1; \
+		if ! ( $(MONITOR_RUNNING) ); then \
+			echo "monitor failed to start; last log lines:"; tail -n 5 $(MONITOR_LOG); \
+			rm -f $(MONITOR_PID); exit 1; \
+		fi; \
 	fi
 
 stop-monitor: ## Stop the cache-miss notification monitor
-	@if [ -f $(MONITOR_PID) ]; then kill $$(cat $(MONITOR_PID)); rm -f $(MONITOR_PID); fi
+	@if $(MONITOR_RUNNING); then kill $$(cat $(MONITOR_PID)); fi; rm -f $(MONITOR_PID)
 
 logs-monitor: ## Show logs from the cache-miss notification monitor
 	tail -f $(MONITOR_LOG)

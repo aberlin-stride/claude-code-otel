@@ -1,4 +1,5 @@
 """Host-side monitor: alerts on macOS when a Claude Code turn misses the prompt cache."""
+import http.client
 import json
 import logging
 import os
@@ -61,6 +62,9 @@ class ExemptionTracker:
             if isinstance(event, Compaction):
                 if event.success:
                     self._post_compaction.add(event.session_id)
+                continue
+            if event.query_source != MAIN_THREAD:
+                result.append(event)
                 continue
             if event.session_id in self._post_compaction:
                 self._post_compaction.discard(event.session_id)
@@ -177,7 +181,8 @@ def notify(title, message, runner=_run_command):
 
 
 def format_alert(event):
-    title = f"Cache miss: {hit_rate(event):.0%} hit rate"
+    # Integer floor: a 79.6% miss must not display as "80%".
+    title = f"Cache miss: {100 * event.cache_read // prompt_tokens(event)}% hit rate"
     message = (f"{event.query_source} · {prompt_tokens(event):,} prompt tokens"
                f" · session {event.session_id[:8]}")
     return (title, message)
@@ -200,36 +205,58 @@ def loki_fetch(base_url):
 
 OVERLAP_NS = 60 * 10**9
 POLL_INTERVAL = 5
+MAIN_THREAD = "repl_main_thread"
 # Live Loki rejects a start within ~10ms of its own "now" with HTTP 400.
 FIRST_POLL_MARGIN_NS = 5 * 10**9
 
 
 class Monitor:
-    def __init__(self, fetch, notify, now_ns=time.time_ns):
+    def __init__(self, fetch, notify, now_ns=time.time_ns, cooldown=None):
         self._fetch = fetch
         self._notify = notify
         self._now_ns = now_ns
         self._since = now_ns() - FIRST_POLL_MARGIN_NS
         self._dedup = Dedup()
         self._exemptions = ExemptionTracker()
-        self._cooldown = Cooldown()
+        self._cooldown = cooldown or Cooldown()
         self._backoff = Backoff()
 
     def poll(self):
         started = self._now_ns()
         try:
-            response = self._fetch(self._since)
-        except (OSError, ValueError) as error:
+            items = parse_events(self._fetch(self._since))
+        except (OSError, ValueError, http.client.HTTPException, KeyError, TypeError) as error:
             if not self._backoff.in_outage:
                 logging.getLogger(__name__).warning("Loki unreachable, backing off: %s", error)
             return self._backoff.failed()
         self._backoff.succeeded()
-        items = parse_events(response)
         self._since = started - OVERLAP_NS
+        misses = {}
         for event in self._exemptions.non_exempt(self._dedup.fresh(items)):
-            if is_significant(event) and self._cooldown.allow(event.session_id):
-                self._notify(*format_alert(event))
+            if is_significant(event):
+                misses.setdefault(event.session_id, []).append(event)
+        for session_id, events in misses.items():
+            if self._cooldown.allow(session_id):
+                self._notify(*format_group(events))
         return POLL_INTERVAL
+
+
+def _percent(event):
+    return 100 * event.cache_read // prompt_tokens(event)
+
+
+def format_group(events):
+    if len(events) == 1:
+        return format_alert(events[0])
+    counts = {}
+    for event in events:
+        counts[event.query_source] = counts.get(event.query_source, 0) + 1
+    sources = " · ".join(
+        f"{source} ×{count}" for source, count in sorted(counts.items(), key=lambda kv: (-kv[1], kv[0])))
+    total = sum(prompt_tokens(event) for event in events)
+    title = f"Cache miss: {len(events)} requests, worst {min(_percent(e) for e in events)}% hit rate"
+    message = f"{sources} · {total:,} prompt tokens · session {events[0].session_id[:8]}"
+    return (title, message)
 
 
 def run(monitor, sleep=time.sleep, should_stop=lambda: False):

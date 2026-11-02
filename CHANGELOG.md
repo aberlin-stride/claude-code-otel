@@ -4,13 +4,34 @@ Notable config decisions for this stack. Newest first.
 
 ## 2026-11-02
 
+### Fixed cache-miss monitor after an adversarial review (Opus critic)
+Each item below was confirmed one at a time and fixed test-first on `fix/cache-monitor-critic-findings`:
+
+1. **Exemptions were spent by helper requests.** `generate_session_title`, `away_summary` and similar requests share the session id and arrive first, so the first-request and post-compaction exemptions were used up and the real first request alerted (verified by the critic on live Loki). Only `repl_main_thread` requests now take or grant an exemption.
+2. **Subagent bursts spent the cooldown.** One session would have produced about 50 alerts, almost all subagent cold starts. Significant misses from one session in one poll are now a single grouped notification, and the cooldown applies per session group. (Your choice: group instead of exempting subagents.)
+3. **Reused PID.** A stale pidfile naming an unrelated live process made `make monitor` skip the start and `make stop-monitor` kill that process. Both now require the process command line to contain `cache_monitor.py`.
+4. **Failed start reported success.** `make monitor` now waits a second, and exits 1 with the log tail if the process died. `make up` ignores that failure on purpose (previously untested; now tested).
+5. **Truncated or malformed Loki responses killed the monitor.** `IncompleteRead`, `BadStatusLine` and an unexpected response shape now back off like any outage.
+6. **Alert title rounded up.** 79.6% showed as "80%". It is now floored with integer arithmetic.
+7. **Tests that could not fail.** The critic showed 12 mutations the suite missed (no dedup, fresh dedup/tracker/cooldown per poll, cooldown before the significance check, no overlap, `limit`/`direction` removed, only `OSError` caught, `<=` cooldown, dedup keyed on sequence only). The new `MonitorWiringTest` tests isolate each mechanism. A mutation harness over the 13 mutations (the critic's plus one it surfaced, a fresh `Cooldown` per poll) now kills all of them. The critic's backoff-order mutation (M17) was not added.
+8. **Docs.** README exemption claim corrected, `make status` no longer says Loki is internal only (it is published on `127.0.0.1:3100`), and the "one per turn" and "cumulative" wording above.
+
+Process notes: two of my tests were wrong the first time. A zombie `sleep` child made `os.kill(pid, 0)` report a killed process as alive, so that test passed against the buggy recipe until it used `Popen.poll()`. A shell negation (`! A && B`) in the new start check left its test red for one commit (`d54111a`).
+
+Accepted limitations (recorded, not fixed):
+- Events are skipped when a Loki outage leaves more than 1000 unread events (no pagination, no warning).
+- A host and Colima VM clock skew above about 60s would cause the HTTP 400 described below, logged as "unreachable".
+- The seen-event and per-session state is never pruned (negligible at the live rate).
+- `make down` then `make up` within about 10s can briefly run two monitors.
+- A possible spurious "Loki unreachable" line right after `make up`, while Loki is still starting (not verified).
+
 ### Added a macOS cache-miss notification monitor
 `scripts/cache_monitor.py` (stdlib Python, runs on the host), started by `make up` and stopped by `make down`. New targets: `monitor`, `stop-monitor`, `logs-monitor`. Tests in `tests/` (`python3 -m unittest discover -s tests`).
 
 Decisions, confirmed one at a time:
 
 1. **Trigger:** per-request hit rate below 80% on at least 20,000 prompt tokens. The 20k floor was a default, not a number you gave.
-2. **Source:** Loki `api_request` events (one per turn), not Prometheus. Prometheus counters are cumulative per session and cannot show a single turn.
+2. **Source:** Loki `api_request` events (one per API call), not Prometheus. Prometheus metrics are delta counters aggregated by label, so a single request's hit rate cannot be recovered from them.
 3. **Exemptions:** first request per session and first after a successful `compaction` event, ordered by `event_sequence`. A TTL-expired cache still alerts.
 4. **Cooldown 5 minutes per session; poll every 5 seconds; Loki outage backs off 5s, 10s, 20s, 40s, 60s (capped) and resets on success.**
 5. **Runs outside Docker** because `osascript` only exists on the host. Title and message are passed to `osascript` as `argv`, so session text is never parsed as AppleScript.
