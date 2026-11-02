@@ -57,6 +57,10 @@ class ExemptionTrackerTest(unittest.TestCase):
         first, second = miss("s1", 1), miss("s1", 2)
         self.assertEqual(cm.ExemptionTracker().non_exempt([first, second]), [second])
 
+    def test_first_event_of_each_session_is_exempt_independently(self):
+        a1, b1, a2, b2 = miss("s1", 1), miss("s2", 2), miss("s1", 3), miss("s2", 4)
+        self.assertEqual(cm.ExemptionTracker().non_exempt([a1, b1, a2, b2]), [a2, b2])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -40,5 +40,14 @@ def is_significant(event):
 
 
 class ExemptionTracker:
+    def __init__(self):
+        self._seen_sessions = set()
+
     def non_exempt(self, items):
-        return items[1:]
+        result = []
+        for event in items:
+            if event.session_id not in self._seen_sessions:
+                self._seen_sessions.add(event.session_id)
+                continue
+            result.append(event)
+        return result
