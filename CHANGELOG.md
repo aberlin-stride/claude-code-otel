@@ -2,6 +2,23 @@
 
 Notable config decisions for this stack. Newest first.
 
+## 2026-11-02
+
+### Added a macOS cache-miss notification monitor
+`scripts/cache_monitor.py` (stdlib Python, runs on the host), started by `make up` and stopped by `make down`. New targets: `monitor`, `stop-monitor`, `logs-monitor`. Tests in `tests/` (`python3 -m unittest discover -s tests`).
+
+Decisions, confirmed one at a time:
+
+1. **Trigger:** per-request hit rate below 80% on at least 20,000 prompt tokens. The 20k floor was a default, not a number you gave.
+2. **Source:** Loki `api_request` events (one per turn), not Prometheus. Prometheus counters are cumulative per session and cannot show a single turn.
+3. **Exemptions:** first request per session and first after a successful `compaction` event, ordered by `event_sequence`. A TTL-expired cache still alerts.
+4. **Cooldown 5 minutes per session; poll every 5 seconds; Loki outage backs off 5s, 10s, 20s, 40s, 60s (capped) and resets on success.**
+5. **Runs outside Docker** because `osascript` only exists on the host. Title and message are passed to `osascript` as `argv`, so session text is never parsed as AppleScript.
+
+**Real bug found by running against live Loki:** a first poll with `start` equal to now gets `HTTP Error 400: end timestamp must not be before or equal to start time` (measured: 10ms margin gives 400, 100ms gives 200). The first poll now starts 5 seconds before launch, and the fake Loki in the tests enforces the same rule.
+
+Known limitations: a session already running at monitor start has its next request exempted; a `compaction` event that reaches Loki after the following `api_request` could cause one false alert; notifications are not clickable and carry no trace link.
+
 ## 2026-10-28
 
 ### Added pdca/pdlc skill cost breakdown panels

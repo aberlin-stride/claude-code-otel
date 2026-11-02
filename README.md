@@ -62,6 +62,25 @@ claude
 make open
 ```
 
+### 4. Cache-miss notifications (macOS)
+
+`make up` also starts a small background monitor that shows a macOS notification when a Claude Code turn misses the prompt cache, so you notice when you are misusing it.
+
+- **What alerts:** a single API request whose cache hit rate (`cacheRead / (cacheRead + cacheCreation + input)`) is below 80% and whose prompt size is at least 20,000 tokens.
+- **What does not alert:** the first request of a session, and the first request after a successful `/compact` (both are expected misses). A cache that expired during an idle gap does alert.
+- **Noise control:** at most one notification per session every 5 minutes. Main-thread and subagent requests both count, and the notification names the `query_source`.
+- **How it works:** `scripts/cache_monitor.py` polls Loki every 5 seconds for `api_request` and `compaction` events. If Loki is down it logs once and retries with a growing delay (5s up to 60s) until Loki is back. It needs Python 3 (standard library only) and runs on the host, not in Docker, because `osascript` is a macOS tool.
+
+```bash
+make monitor        # start it (safe to run twice)
+make logs-monitor   # follow its log (.cache-monitor.log)
+make stop-monitor   # stop it (make down does this too)
+```
+
+Set `LOKI_URL` to point at a Loki other than `http://localhost:3100`. If no notification appears, check System Settings > Notifications for the terminal app that runs `make`.
+
+Limitations: a session already running when the monitor starts has its next request treated as the first of the session. Notifications are not clickable and do not link to the trace.
+
 
 ## Claude Code Observability Stack
 

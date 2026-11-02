@@ -16,6 +16,7 @@ Add under a
 - Real skill and tool names require OTEL_LOG_TOOL_DETAILS=1. Env or flag changes apply only to NEW Claude sessions.
 - Only MCP tools carry cost attribution. Built-in tools do not.
 - There is no local Datadog exporter.
+- `make up` also starts `scripts/cache_monitor.py` on the host (not in Docker). It polls Loki at `localhost:3100` and sends macOS notifications for cache misses, so check `colima status` and the published Loki port first if it logs "Loki unreachable". Tests: `python3 -m unittest discover -s tests`. State: `.cache-monitor.pid` and `.cache-monitor.log` in the repo root.
 
 
 ## Working Agreements
