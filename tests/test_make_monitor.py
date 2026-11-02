@@ -48,6 +48,13 @@ class MakeMonitorTest(unittest.TestCase):
         self.assertTrue(os.path.exists(self.pidfile))
         self.assertTrue(alive(self.read_pid()))
 
+    def test_monitor_target_is_idempotent(self):
+        self.make("monitor")
+        first = self.read_pid()
+        self.make("monitor")
+        self.assertEqual(self.read_pid(), first)
+        self.assertTrue(alive(first))
+
 
 if __name__ == "__main__":
     unittest.main()

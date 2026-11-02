@@ -105,7 +105,11 @@ demo-metrics: ## Generate demo metrics for testing
 	@echo "📖 Run 'make setup-claude' for setup instructions" 
 
 monitor: ## Start the cache-miss notification monitor in the background
-	@nohup $(PYTHON) scripts/cache_monitor.py >> $(MONITOR_LOG) 2>&1 & echo $$! > $(MONITOR_PID)
+	@if [ -f $(MONITOR_PID) ] && kill -0 $$(cat $(MONITOR_PID)) 2>/dev/null; then \
+		echo "monitor already running (pid $$(cat $(MONITOR_PID)))"; \
+	else \
+		nohup $(PYTHON) scripts/cache_monitor.py >> $(MONITOR_LOG) 2>&1 & echo $$! > $(MONITOR_PID); \
+	fi
 
 stop-monitor: ## Stop the cache-miss notification monitor
 	@true
