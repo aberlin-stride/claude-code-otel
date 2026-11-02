@@ -210,14 +210,14 @@ FIRST_POLL_MARGIN_NS = 5 * 10**9
 
 
 class Monitor:
-    def __init__(self, fetch, notify, now_ns=time.time_ns):
+    def __init__(self, fetch, notify, now_ns=time.time_ns, cooldown=None):
         self._fetch = fetch
         self._notify = notify
         self._now_ns = now_ns
         self._since = now_ns() - FIRST_POLL_MARGIN_NS
         self._dedup = Dedup()
         self._exemptions = ExemptionTracker()
-        self._cooldown = Cooldown()
+        self._cooldown = cooldown or Cooldown()
         self._backoff = Backoff()
 
     def poll(self):
