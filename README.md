@@ -223,6 +223,9 @@ Organized into sections reflecting the observability documentation recommendatio
 
 #### 📊 Overview
 - Active sessions, cost, token usage, lines of code changed
+- Avg Cost / Day (all time): mean over local days that had spend, ignoring days under 15% of the median day
+- Avg Cost / Week (30d): mean of the rolling 7-day cost sums, evaluated daily over the last 30 days
+- Both averages use a fixed EST day boundary (`offset 19h`); see the CHANGELOG for the daylight-saving follow-up
 
 #### 💰 Cost & Usage Analysis
 - Cost trends by model, token usage breakdown, API request counts by model version

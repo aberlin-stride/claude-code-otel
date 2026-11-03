@@ -2,6 +2,18 @@
 
 Notable config decisions for this stack. Newest first.
 
+## 2026-11-03
+
+### Added average cost per day and per week to the overview
+The overview row is now six 4-wide stats. The two new panels (ids 44 and 45) are covered by `tests/test_dashboard_overview.py`, which runs the real panel queries through `promtool` in the Prometheus container on synthetic cost counters (the query tests skip when that container is not running).
+
+- **Avg Cost / Day (all time):** mean of local days that had spend. Days under 15% of the median day are dropped (low outliers only, your choice). The median is pinned once with `@ end()` so every step uses the same cutoff. On live data the cutoff drops nothing yet: the lowest day (10.6) sits just above it (10.2).
+- **Avg Cost / Week (30d):** mean of the rolling 7-day sums, evaluated daily over 30 days. No outlier filtering.
+- **30-day cap on "all time":** Prometheus retention is `--storage.tsdb.retention.time=30d` (`docker-compose.yml`). Once data is older than 30 days it drops out, so the daily panel covers at most the last 30 days. Raising retention is a separate change.
+- **Weekly bias:** only 30 days are kept, so once history exceeds 30 days the oldest 7-day windows are truncated and pull the weekly average down. A `[23d:1d]` range would avoid that; `[30d:1d]` was kept as chosen.
+- **Fixed EST day boundary:** days are aligned to local midnight with `offset 19h` because Prometheus cannot read the dashboard timezone. **Follow-up:** change `19h` to `18h` in both panels when daylight saving time starts on 2027-03-08, and back to `19h` in November. The boundary is also wrong when you are in another timezone.
+- **Partial first day:** data starts at 22:00 on 2026-10-23, so that day is a partial day.
+
 ## 2026-11-02
 
 ### Fixed cache-miss monitor after an adversarial review (Opus critic)
