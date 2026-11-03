@@ -88,6 +88,22 @@ class DailyAveragePanelTest(unittest.TestCase):
         self.assertEqual(target["datasource"]["uid"], "prometheus")
 
 
+class WeeklyAveragePanelTest(unittest.TestCase):
+    def test_weekly_average_panel_completes_the_row_of_six(self):
+        panels = load_panels()
+        self.assertIn(45, panels)
+        panel = panels[45]
+        self.assertEqual(panel["type"], "stat")
+        self.assertEqual(panel["title"], "Avg Cost / Week (30d)")
+        self.assertEqual(panel["fieldConfig"]["defaults"]["unit"], "currencyUSD")
+        self.assertEqual(
+            panel["gridPos"], {"h": 4, "w": 4, "x": 20, "y": 1})
+        self.assertEqual(panel["options"]["reduceOptions"]["calcs"], ["lastNotNull"])
+        (target,) = panel["targets"]
+        self.assertTrue(target["instant"])
+        self.assertEqual(target["datasource"]["uid"], "prometheus")
+
+
 @unittest.skipUnless(prometheus_is_up(), "prometheus container is not running")
 class DailyAverageQueryTest(unittest.TestCase):
     def daily_expr(self):

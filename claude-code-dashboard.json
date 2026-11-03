@@ -385,6 +385,68 @@
       "type": "stat"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "description": "Mean of the rolling 7-day cost sums, evaluated daily over the last 30 days. Prometheus keeps 30 days, so the oldest windows are partial and pull the average down. Day boundaries use a fixed EST offset (19h); change it to 18h in EDT.",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "id": 45,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "vector(0)",
+          "interval": "",
+          "legendFormat": "Avg cost / week",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "title": "Avg Cost / Week (30d)",
+      "type": "stat"
+    },
+    {
       "title": "💰 Cost & Usage Analysis",
       "type": "row",
       "gridPos": {
