@@ -104,6 +104,12 @@ class DailyAverageQueryTest(unittest.TestCase):
             self.daily_expr(), [100] * 6 + [10], expected=100)
         self.assertEqual(code, 0, output)
 
+    def test_daily_average_keeps_days_over_fifteen_percent_of_median(self):
+        # 20 sits between the 15% cutoff (15) and a 25% cutoff (25)
+        code, output = promtool_daily_average(
+            self.daily_expr(), [100, 100, 100, 20], expected=80)
+        self.assertEqual(code, 0, output)
+
 
 if __name__ == "__main__":
     unittest.main()
