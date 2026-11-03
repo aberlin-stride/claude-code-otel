@@ -436,7 +436,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "vector(0)",
+          "expr": "avg_over_time(sum(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[7d] offset 19h))[30d:1d])",
           "interval": "",
           "legendFormat": "Avg cost / week",
           "refId": "A",

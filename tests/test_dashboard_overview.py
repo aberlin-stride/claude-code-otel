@@ -120,6 +120,14 @@ class DailyAverageQueryTest(unittest.TestCase):
             self.daily_expr(), [100] * 6 + [10], expected=100)
         self.assertEqual(code, 0, output)
 
+    def test_weekly_average_is_the_mean_of_rolling_seven_day_sums(self):
+        (target,) = load_panels()[45]["targets"]
+        # 30 daily steps: 10 windows of 700, transition windows 800..1300,
+        # 14 windows of 1400 -> 32900 / 30 = 1096.67
+        code, output = promtool_daily_average(
+            target["expr"], [100] * 20 + [200] * 20, expected=1097)
+        self.assertEqual(code, 0, output)
+
     def test_daily_average_keeps_days_over_fifteen_percent_of_median(self):
         # 20 sits between the 15% cutoff (15) and a 25% cutoff (25)
         code, output = promtool_daily_average(
