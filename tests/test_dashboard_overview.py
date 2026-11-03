@@ -19,5 +19,21 @@ class OverviewLayoutTest(unittest.TestCase):
         self.assertEqual({g["y"] for g in grid}, {1})
 
 
+class DailyAveragePanelTest(unittest.TestCase):
+    def test_daily_average_panel_is_a_stat_next_to_the_four(self):
+        panels = load_panels()
+        self.assertIn(44, panels)
+        panel = panels[44]
+        self.assertEqual(panel["type"], "stat")
+        self.assertEqual(panel["title"], "Avg Cost / Day (all time)")
+        self.assertEqual(panel["fieldConfig"]["defaults"]["unit"], "currencyUSD")
+        self.assertEqual(
+            panel["gridPos"], {"h": 4, "w": 4, "x": 16, "y": 1})
+        self.assertEqual(panel["options"]["reduceOptions"]["calcs"], ["lastNotNull"])
+        (target,) = panel["targets"]
+        self.assertTrue(target["instant"])
+        self.assertEqual(target["datasource"]["uid"], "prometheus")
+
+
 if __name__ == "__main__":
     unittest.main()
