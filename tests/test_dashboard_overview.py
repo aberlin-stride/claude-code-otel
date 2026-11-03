@@ -44,7 +44,8 @@ def promtool_daily_average(expr, spends, expected):
                 "values": " ".join(values),
             }],
             "promql_expr_test": [{
-                "expr": expr,
+                # promtool compares exactly; round away increase() float noise
+                "expr": "round(%s, 1)" % expr,
                 "eval_time": "%dh" % (24 * (len(spends) + 1)),
                 "exp_samples": [{"labels": "{}", "value": expected}],
             }],
@@ -96,6 +97,11 @@ class DailyAverageQueryTest(unittest.TestCase):
     def test_daily_average_counts_only_days_with_spend(self):
         code, output = promtool_daily_average(
             self.daily_expr(), [100, 200, None, 300], expected=200)
+        self.assertEqual(code, 0, output)
+
+    def test_daily_average_drops_days_under_fifteen_percent_of_median(self):
+        code, output = promtool_daily_average(
+            self.daily_expr(), [100] * 6 + [10], expected=100)
         self.assertEqual(code, 0, output)
 
 
