@@ -1,6 +1,7 @@
 # Changelog
 
 Notable config decisions for this stack. Newest first.
+- **OTLP over HTTP, not gRPC:** from 2026-11-04 no Claude Code telemetry reached the collector over gRPC (`localhost:4317`): the TCP connection established but no data arrived, with no client error. The same client over `http/protobuf` to `localhost:4318` delivered logs to Loki and metrics to Prometheus. `OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf` and `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` are now set in `~/.claude/settings.json`, `~/.zshrc` and `README.md`. The cause of the gRPC failure is not established (suspect the Colima port forward). `CLAUDE_OBSERVABILITY.md` still shows gRPC examples.
 - **Cost per request (session dashboard):** a table (id 104) lists every `api_request` event of the selected session, sorted by `cost_usd` descending, with `trace_id` linking to Tempo; a stat (id 105) shows the mean. Both read Loki only, because Prometheus `max_over_time` undercounts this session ($6.25 vs $9.01 from 217 Loki events; `increase()` gave $8.45). Events with no `trace_id` show an empty link cell.
 
 ## 2026-11-03
