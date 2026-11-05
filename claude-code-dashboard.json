@@ -447,13 +447,82 @@
       "type": "stat"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Seconds since the newest claude_code_token_usage_tokens_total sample reached Prometheus (looks back 7 days). Idle gaps are normal; hours of silence while you are using Claude Code mean the export path is broken. No data means nothing arrived in 7 days.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 3600
+              },
+              {
+                "color": "red",
+                "value": 14400
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 46,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "time() - max(max_over_time(timestamp(claude_code_token_usage_tokens_total{job=\"otel-collector\"})[7d:1m]))",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Time since last telemetry",
+          "refId": "A"
+        }
+      ],
+      "title": "Last Telemetry Received",
+      "type": "stat"
+    },
+    {
       "title": "💰 Cost & Usage Analysis",
       "type": "row",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 5
+        "y": 8
       },
       "collapsed": false
     },
@@ -517,7 +586,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 6
+        "y": 9
       },
       "description": "Trailing 1h cost per model, sampled at the graph's native resolution. Counters reset per session, so a session's very first cost sample inside a sampled window can be undercounted (Prometheus increase() limitation).",
       "id": 5,
@@ -688,7 +757,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 6
+        "y": 9
       },
       "id": 6,
       "options": {
@@ -819,7 +888,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 82
+        "y": 85
       },
       "id": 15,
       "options": {
@@ -859,7 +928,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 41
       },
       "collapsed": false
     },
@@ -993,7 +1062,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 39
+        "y": 42
       },
       "id": 7,
       "options": {
@@ -1120,7 +1189,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 39
+        "y": 42
       },
       "id": 14,
       "options": {
@@ -1217,7 +1286,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 47
+        "y": 50
       },
       "id": 8,
       "options": {
@@ -1255,7 +1324,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 55
+        "y": 58
       },
       "collapsed": false
     },
@@ -1319,7 +1388,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 56
+        "y": 59
       },
       "id": 9,
       "options": {
@@ -1411,7 +1480,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 56
+        "y": 59
       },
       "id": 10,
       "options": {
@@ -1449,7 +1518,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 64
+        "y": 67
       },
       "collapsed": false
     },
@@ -1513,7 +1582,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 65
+        "y": 68
       },
       "id": 11,
       "options": {
@@ -1604,7 +1673,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 65
+        "y": 68
       },
       "description": "Trailing 1h commit/PR count, sampled at the graph's native resolution. A session's first commit/PR inside a sampled window can be undercounted (Prometheus increase() limitation).",
       "id": 12,
@@ -1643,7 +1712,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 73
+        "y": 76
       },
       "collapsed": false
     },
@@ -1656,7 +1725,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 74
+        "y": 77
       },
       "id": 13,
       "options": {
@@ -1691,7 +1760,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 74
+        "y": 77
       },
       "id": 17,
       "options": {
@@ -1764,7 +1833,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 14
+        "y": 17
       },
       "id": 19,
       "options": {
@@ -1848,7 +1917,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 14
+        "y": 17
       },
       "id": 25,
       "options": {
@@ -1901,7 +1970,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 22
+        "y": 25
       },
       "id": 23,
       "options": {
@@ -1952,7 +2021,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 33
       },
       "id": 24,
       "options": {
@@ -1986,7 +2055,7 @@
     {
       "collapsed": false,
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 90 },
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 93 },
       "id": 40,
       "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A" }],
       "title": "🧵 PDCA / PDLC Cost Breakdown",
@@ -1999,7 +2068,7 @@
         "defaults": { "color": { "mode": "palette-classic" }, "mappings": [], "unit": "currencyUSD" },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 91 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 94 },
       "id": 41,
       "options": {
         "displayMode": "gradient",
@@ -2027,7 +2096,7 @@
         "defaults": { "color": { "mode": "palette-classic" }, "mappings": [], "unit": "currencyUSD" },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 99 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 102 },
       "id": 42,
       "options": {
         "displayMode": "gradient",
@@ -2055,7 +2124,7 @@
         "defaults": { "color": { "mode": "palette-classic" }, "mappings": [], "unit": "currencyUSD" },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 99 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 102 },
       "id": 43,
       "options": {
         "displayMode": "gradient",

@@ -135,5 +135,77 @@ class DailyAverageQueryTest(unittest.TestCase):
         self.assertEqual(code, 0, output)
 
 
+def promtool_last_sample_age(expr, values, eval_time, expected):
+    """Run `expr` through promtool on a synthetic token counter, one sample per minute."""
+    case = {
+        "evaluation_interval": "1m",
+        "tests": [{
+            "interval": "1m",
+            "input_series": [{
+                "series": 'claude_code_token_usage_tokens_total{job="otel-collector"}',
+                "values": values,
+            }],
+            "promql_expr_test": [{
+                "expr": expr,
+                "eval_time": eval_time,
+                "exp_samples": [{"labels": "{}", "value": expected}],
+            }],
+        }],
+    }
+    done = subprocess.run(
+        ["docker", "compose", "exec", "-T", "prometheus", "sh", "-c",
+         "cat > /tmp/stale_test.json && promtool test rules /tmp/stale_test.json"],
+        cwd=ROOT, input=json.dumps(case), capture_output=True, text=True, timeout=120)
+    return done.returncode, done.stdout + done.stderr
+
+
+class LastTelemetryPanelTest(unittest.TestCase):
+    def test_panel_is_a_full_width_stat_below_the_overview_row(self):
+        panel = load_panels()[46]
+        self.assertEqual(panel["type"], "stat")
+        self.assertEqual(panel["title"], "Last Telemetry Received")
+        self.assertEqual(panel["fieldConfig"]["defaults"]["unit"], "s")
+        self.assertEqual(panel["gridPos"], {"h": 3, "w": 24, "x": 0, "y": 5})
+        self.assertEqual(panel["options"]["reduceOptions"]["calcs"], ["lastNotNull"])
+        (target,) = panel["targets"]
+        self.assertTrue(target["instant"])
+        self.assertEqual(target["datasource"]["uid"], "prometheus")
+
+    def test_thresholds_turn_red_after_four_hours(self):
+        steps = load_panels()[46]["fieldConfig"]["defaults"]["thresholds"]["steps"]
+        self.assertEqual(
+            [(s["color"], s["value"]) for s in steps],
+            [("green", None), ("yellow", 3600), ("red", 14400)])
+
+    def test_no_panels_overlap(self):
+        with open(DASHBOARD) as f:
+            boxes = [(p.get("title"), p["gridPos"]) for p in json.load(f)["panels"]]
+        for i, (a_title, a) in enumerate(boxes):
+            for b_title, b in boxes[i + 1:]:
+                overlap = (a["x"] < b["x"] + b["w"] and b["x"] < a["x"] + a["w"]
+                           and a["y"] < b["y"] + b["h"] and b["y"] < a["y"] + a["h"])
+                self.assertFalse(overlap, "%s overlaps %s" % (a_title, b_title))
+
+
+@unittest.skipUnless(prometheus_is_up(), "prometheus container is not running")
+class LastTelemetryQueryTest(unittest.TestCase):
+    def expr(self):
+        (target,) = load_panels()[46]["targets"]
+        return target["expr"]
+
+    def test_age_is_seconds_since_the_newest_sample(self):
+        # samples at minutes 0-2, then silence; at minute 60 the age is 58 min
+        code, output = promtool_last_sample_age(
+            self.expr(), "1 2 3 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _",
+            "60m", expected=3480)
+        self.assertEqual(code, 0, output)
+
+    def test_age_survives_a_gap_longer_than_the_five_minute_staleness_window(self):
+        # a plain timestamp() would return nothing here; the subquery must not
+        code, output = promtool_last_sample_age(
+            self.expr(), "1 2 3", "40m", expected=2280)
+        self.assertEqual(code, 0, output)
+
+
 if __name__ == "__main__":
     unittest.main()
