@@ -16,6 +16,9 @@ Add under a
 - Real skill and tool names require OTEL_LOG_TOOL_DETAILS=1. Env or flag changes apply only to NEW Claude sessions.
 - Only MCP tools carry cost attribution. Built-in tools do not.
 - There is no local Datadog exporter.
+- Export Claude Code telemetry over OTLP HTTP (`http/protobuf`, `http://localhost:4318`). gRPC on 4317 connects but delivers nothing, with no client error. `env` in `~/.claude/settings.json` overrides shell exports.
+- Port 8889 is not published to the host, so `curl localhost:8889/metrics` always fails. Check Prometheus (`localhost:9090`) or Loki instead.
+- Per-request and per-session cost totals from Loki `api_request` events (`cost_usd`) exceed Prometheus `max_over_time` totals; Prometheus undercounts. Use Loki for per-request cost.
 - `make up` also starts `scripts/cache_monitor.py` on the host (not in Docker). It polls Loki at `localhost:3100` and sends macOS notifications for cache misses, so check `colima status` and the published Loki port first if it logs "Loki unreachable". Tests: `python3 -m unittest discover -s tests`. State: `.cache-monitor.pid` and `.cache-monitor.log` in the repo root.
 
 

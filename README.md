@@ -56,6 +56,8 @@ claude
 
 ```
 
+> **Use OTLP over HTTP (port 4318), not gRPC (4317).** With the Colima setup, gRPC connects but delivers no data and the client logs no error; HTTP delivers logs and metrics. Variables in the `env` block of `~/.claude/settings.json` override your shell exports, and changes apply only to new sessions. Port 8889 (Prometheus exporter) is not published to the host, so `curl localhost:8889/metrics` fails by design; check Prometheus at `localhost:9090` instead.
+
 ### 3. Open the dashboard
 
 ```bash
@@ -256,6 +258,9 @@ Select a `session_id` to inspect a single Claude Code session:
 - Cost by Model & Effort (cumulative), Cache Hit Ratio
 - Active Time: User vs CLI, Cost by Query Source
 - Cost by Skill, Cost by MCP Tool (same attribution caveats as above)
+- Cost per Request: a table of every API request in the session, most expensive first, with `trace_id` linking to Tempo (events without a `trace_id` show an empty cell)
+- Avg Cost / Request: mean `cost_usd` per `api_request` event
+- Both cost-per-request panels read Loki events, not Prometheus, because Prometheus `max_over_time` undercounts a session (one session: $6.25 vs $9.01 from 217 Loki events)
 - Session Event Timeline
 
 ## 🔧 Advanced Configuration
