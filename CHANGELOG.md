@@ -1,6 +1,7 @@
 # Changelog
 
 Notable config decisions for this stack. Newest first.
+- **Cost per request (session dashboard):** a table (id 104) lists every `api_request` event of the selected session, sorted by `cost_usd` descending, with `trace_id` linking to Tempo; a stat (id 105) shows the mean. Both read Loki only, because Prometheus `max_over_time` undercounts this session ($6.25 vs $9.01 from 217 Loki events; `increase()` gave $8.45). Events with no `trace_id` show an empty link cell.
 
 ## 2026-11-03
 

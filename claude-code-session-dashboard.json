@@ -436,12 +436,180 @@
       "type": "bargauge"
     },
     {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "Every API request in the selected session with its own cost, most expensive first. Click trace_id to open the trace in Tempo (empty when the event has no trace_id).",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cost_usd"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 4
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "trace_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open trace in Tempo",
+                    "url": "/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22queryType%22:%22traceql%22,%22query%22:%22${__value.raw}%22%7D%5D%7D"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 18,
+        "x": 0,
+        "y": 33
+      },
+      "id": 104,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "{service_name=~\".*claude-code.*\"} | event_name=\"api_request\" | session_id=\"$session_id\" | line_format `{\"time\":\"{{.event_timestamp}}\",\"request_id\":\"{{.request_id}}\",\"trace_id\":\"{{.trace_id}}\",\"model\":\"{{.model}}\",\"query_source\":\"{{.query_source}}\",\"cost_usd\":\"{{.cost_usd}}\",\"input_tokens\":\"{{.input_tokens}}\",\"output_tokens\":\"{{.output_tokens}}\",\"cache_read_tokens\":\"{{.cache_read_tokens}}\",\"duration_ms\":\"{{.duration_ms}}\"}`",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Cost per Request (Selected Session)",
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "format": "json",
+            "source": "Line"
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {"destinationType": "number", "targetField": "cost_usd"},
+              {"destinationType": "number", "targetField": "input_tokens"},
+              {"destinationType": "number", "targetField": "output_tokens"},
+              {"destinationType": "number", "targetField": "cache_read_tokens"},
+              {"destinationType": "number", "targetField": "duration_ms"}
+            ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Line": true,
+              "Time": true,
+              "id": true,
+              "labelTypes": true,
+              "labels": true,
+              "tsNs": true
+            },
+            "indexByName": {
+              "time": 0,
+              "request_id": 1,
+              "trace_id": 2,
+              "model": 3,
+              "query_source": 4,
+              "cost_usd": 5
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "cost_usd",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "Mean cost of one API request in the selected session: sum of cost_usd over api_request events divided by their count. Computed from Loki events only, so numerator and denominator cover the same requests.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 4,
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 6,
+        "x": 18,
+        "y": 33
+      },
+      "id": 105,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum(sum_over_time({service_name=~\".*claude-code.*\"} | event_name=\"api_request\" | session_id=\"$session_id\" | unwrap cost_usd [$__range])) / sum(count_over_time({service_name=~\".*claude-code.*\"} | event_name=\"api_request\" | session_id=\"$session_id\" [$__range]))",
+          "instant": true,
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Avg Cost / Request (Selected Session)",
+      "type": "stat"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 33
+        "y": 43
       },
       "id": 101,
       "panels": [],
@@ -458,7 +626,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 44
       },
       "id": 102,
       "options": {
