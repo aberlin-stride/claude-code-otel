@@ -474,7 +474,8 @@
               }
             ]
           },
-          "unit": "dthms"
+          "decimals": 0,
+          "unit": "suffix: s"
         },
         "overrides": []
       },

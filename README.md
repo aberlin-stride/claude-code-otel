@@ -228,7 +228,7 @@ Organized into sections reflecting the observability documentation recommendatio
 - Avg Cost / Day (all time): mean over local days that had spend, ignoring days under 15% of the median day
 - Avg Cost / Week (30d): mean of the rolling 7-day cost sums, evaluated daily over the last 30 days
 - Both averages use a fixed EST day boundary (`offset 19h`); see the CHANGELOG for the daylight-saving follow-up
-- Last Telemetry Received: time since the newest token-usage sample reached Prometheus, shown as `hh:mm:ss` (green under 1h, yellow to 4h, red beyond). "No data" means nothing arrived in 7 days. Idle gaps are normal; hours of silence while you are using Claude Code mean the export path is broken
+- Last Telemetry Received: time since the newest token-usage sample reached Prometheus, shown in whole seconds (green under 1h, yellow to 4h, red beyond). "No data" means nothing arrived in 7 days. Idle gaps are normal; hours of silence while you are using Claude Code mean the export path is broken
 
 #### 💰 Cost & Usage Analysis
 - Cost trends by model, token usage breakdown, API request counts by model version
