@@ -164,7 +164,8 @@ class LastTelemetryPanelTest(unittest.TestCase):
         panel = load_panels()[46]
         self.assertEqual(panel["type"], "stat")
         self.assertEqual(panel["title"], "Last Telemetry Received")
-        self.assertEqual(panel["fieldConfig"]["defaults"]["unit"], "s")
+        # hh:mm:ss, because the auto-scaled "s" unit labels minutes "mins", which reads as "ms"
+        self.assertEqual(panel["fieldConfig"]["defaults"]["unit"], "dthms")
         self.assertEqual(panel["gridPos"], {"h": 3, "w": 24, "x": 0, "y": 5})
         self.assertEqual(panel["options"]["reduceOptions"]["calcs"], ["lastNotNull"])
         (target,) = panel["targets"]
